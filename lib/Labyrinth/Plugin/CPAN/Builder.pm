@@ -56,7 +56,7 @@ my $RECENT  = 200;
 
 =over 4
 
-=item BasicPages
+=item BasePages
 
 Regenerates all site pages.
 
