@@ -1,0 +1,8 @@
+CPAN-Tester-WWW-Reports
+=======================
+
+This distribution contains the files used to run and manage the CPAN Testers 
+Reports website.
+
+Please note the initial distribution is incomplete. It is also lacking in
+documentation of how everything fits together. Expect further releases soon.
