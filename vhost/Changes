@@ -1,0 +1,190 @@
+Changes for the CPAN Testers Reports website
+
+3.34	09/01/2011
+	- further refinements to building author and distro pages.
+	- optimisation of queries.
+
+3.33	09/01/2011
+	- added Fix method to clean release_summary table.
+	- added update of summary for each author of a dist/version.
+
+3.32	06/01/2011
+	- added support for providing dynamic YAML, RSS and nopass RSS files.
+	- disabled reading from existing JSON files as it uses too much memory
+
+3.31    16/12/2010
+	- added support for initially reading from stored JSON file for authors
+	  and distros.
+	- added support for updating an author JSON via the distro update. This
+	  will author page updates to be done by the distros, and only missing
+	  pages (new authors) will get push into page_requests.
+
+3.30    29/11/2010
+	- fix to admin layout.
+	- fix to email constraint.
+        - upgraded Labyrinth Core to version 5.00.
+	- update to admin templates to make them consistent across sites.
+	- update to hits table, createdate (varchar)=> createddate (int),
+	  added indices for area and query.
+
+3.29    10/11/2010
+	- authors now produce JSON files.
+	- added rel="nofollow" to JSON, YAML and RSS links.
+	- report pages now refresh every 5 minutes for missing reports.
+	- added realms and layouts for YAML and RSS
+	- added the ability for RSS feeds for authors and distros to be 
+	  generated dynamically from the saved JSON file.
+	- fix to add/edit requests in admin site.
+
+3.28    30/10/2010
+        - update Menus plugin to latest codebase.
+        - added Requests plugin (and supporting files).
+        - added Metabase and Labyrinth links.
+        - repositioned site boxes to avoid text and logo clashing.
+        - reworked SQL queries to be more efficient.
+        - sessions now deleted by isolated script not part of logins.
+        - builder now uses versions instead of Sort::Versions.
+        - changes to the build frequency of requests.
+        - perl development version regex reworked to be future proof.
+        - added release summary rebuild for a single distribution.
+        - fix to release summary to allow for guid.
+        - fix to view report with id/nntpid/guid.
+        - new OS title headings.
+
+3.27    11/04/2010
+        - bugfix to stats code for storing MSWin32 latest version.
+        - added Metabase lookup code for reports and testers facts.
+        - defaulted report references to GUID.
+        - upgraded Labyrinth Core to version 4.18.
+
+3.26    31/01/2010
+        - redesigned Labyrinth Core to use requests via DB, and to only load 
+          plugins on demand.
+        - release_data and release_summary tables now use GUID.
+
+3.25    18/01/2010
+        - update to SQL to ignore invalid reports.
+
+3.24    11/01/2010
+        - added quote.html
+        - changed report view to a widescreen version.
+        - added param functionality for distribution version selection.
+        - added distribution version to individual report pages
+
+3.23    06/01/2010
+        - Status => Grade.
+        - removed visible references to NNTP ID, only used to link to reports.
+        - reports now viewable within the website, not via NNTP archive.
+        - fixed recent.html and recent.rss content and links.
+        - static article pages now in page directory.
+        - orange buttons (RSS, etc) moved to top of pages.
+        - added Analysis to site family lists.
+
+3.22    29/12/2009
+        - changed site version var to 'siteversion', updating all scripts.
+        - reworked PASS summaries, now only lists non-patched versions.
+        - reworked PASS statistics to include versions and counts.
+
+3.21    28/12/2009
+        - reorganised pages to bring pass summary to the top.
+        - updated the stats pages.
+
+3.20    22/12/2009
+        - improvements to the builder.
+        - added Monitor code.
+        - added status page.
+
+3.19    10/12/2009
+        - updated Builder to slightly shift processing to older requests, if
+          requests get too older (over 5 days).
+        - updated Author and Distro to check for authors and distros, and throw
+          an unknown page rather than push into the page_requests table.
+
+3.18    19/10/2009
+        - fixed formatDate
+        - fixed order of reports for author pages
+        - changed update requests lookup for both authors and distros.
+        - added functionality to use new osname table rather than long search
+          through cpanstats table.
+        - backported live fixes over the last few months.
+
+3.17    25/07/2009
+        - added status table for the builder (based on page requests).
+        - added configurable build levels to better adjust how the build runs.
+
+3.16    18/07/2009
+        - toolkit script versions now synced to package release version.
+        - added GetOlderRequests to catch requests that have been waiting too 
+          long.
+
+3.15    16/07/2009
+        - saved as 3.14_01 but really 3.15
+        - LIVE fixes
+          - added quickhit updates (GetSmallRequests).
+          - breadcrumb updates made uppercase.
+
+3.14    30/06/2009
+        - fixed some layout issues.
+
+3.13    14/06/2009
+        - added config files for the builder or release backend scripts.
+        - amended Release.pm to match how release_data and release_summary
+          tables are now used.
+
+3.12    09/06/2009
+        - further changes to build the release_summary table.
+
+3.11    08/06/2009
+        - altered Release::Create() to create all missing entries.
+        - fixes to ensure author and distro YAML files match fields.
+        - fixes to JSON output to include all reports.
+        - updated checks for the checker.
+
+3.10    07/06/2009
+        - added a crosslink to jump between pages in the dynamic and static 
+          sites.
+        - fixed typo fix 'Wesite' in static layout
+        - fixed static pages for distro and author
+        - added release_summary plugin code.
+
+3.09    04/06/2009
+        - rewritten SQL for author pages, for authors with 100 or less dists,
+          as the although the old SQL is fairly constant, the newer SQL works
+          much better for the bulk of queries.
+
+3.08    03/06/2009
+        - improved performance of the AJAX reports-summary.cgi (v0.04).
+        - added symlink/merged code to reports-summary.cgi lookup.
+        - fixed CSS code for cross-browser (thanks again to JJ).
+        - fixed link to recent.html.
+
+3.07    01/06/2009
+        - added IE6 warning code (thanks to JJ)
+        - attempt to fix IE bug with titles.
+
+3.06    01/06/2009
+        - fixed js filters as spotted by Adam Kennedy.
+        - added missing recent pages to Builder.pm
+
+3.05    26/05/2009
+        - fixed bogus author and distro requests
+
+3.04    23/05/2009
+        - added the ability to generate symlinks
+        - added the removal of all merged distribution names
+
+3.03    21/05/2009
+        - further changes to improve performance for the Builder.
+
+3.02    21/05/2009
+        - fixes as scalar.substr(0,1) does work in TT :(
+          - addendum: this appears to have been due to the server having 
+            TT-2.14, which doesn't support VMETHODS. However, rework might as
+            well stay.
+        - added tool to help check entires in DB
+
+3.01    19/05/2009
+        - rework to integrate with new backend design
+
+3.00    27/04/2009
+        - initial basic Labyrinth release
