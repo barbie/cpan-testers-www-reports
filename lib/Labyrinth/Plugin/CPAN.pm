@@ -4,11 +4,11 @@ use strict;
 use warnings;
 
 use vars qw($VERSION);
-$VERSION = '1.00';
+$VERSION = '3.36';
 
 =head1 NAME
 
-CPAN - Plugin containing CPAN specific methods for other plugins.
+Labyrinth::Plugin::CPAN - Handles CPAN specific methods for other plugins.
 
 =cut
 

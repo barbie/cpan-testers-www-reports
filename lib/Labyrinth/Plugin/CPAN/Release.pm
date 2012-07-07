@@ -4,11 +4,11 @@ use strict;
 use warnings;
 
 use vars qw($VERSION);
-$VERSION = '1.00';
+$VERSION = '3.36';
 
 =head1 NAME
 
-CPAN::Release - Plugin to handle the release summary table
+Labyrinth::Plugin::CPAN::Release - Plugin to handle the release summary table
 
 =cut
 

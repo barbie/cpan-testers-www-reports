@@ -1,5 +1,21 @@
 Changes for the CPAN Testers Reports website
 
+3.36	current
+	- renumbered versions to reflect website versions.
+        - upgrade to Labyrinth 5.12.
+        - upgrade to Labyrinth-Plugin-Core 5.10.
+        - reworked Makefile.PL for clarity.
+	- added README
+	- updated cpan-config.ini
+
+3.35	05/02/2012
+	- First	public release (this was originally released as v1.00)
+
+	# This release, although doesn't match the code released for the
+	# the live website, forms the basis of the official public release
+	# as version 1.00 of this distribution. This version is now being
+	# merged for the next release.
+
 3.34	09/01/2011
 	- further refinements to building author and distro pages.
 	- optimisation of queries.

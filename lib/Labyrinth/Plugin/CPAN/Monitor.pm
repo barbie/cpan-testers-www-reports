@@ -4,11 +4,11 @@ use strict;
 use warnings;
 
 use vars qw($VERSION);
-$VERSION = '1.00';
+$VERSION = '3.36';
 
 =head1 NAME
 
-CPAN::Monitor - Plugin to monitor actions and tables
+Labyrinth::Plugin::CPAN::Monitor - Plugin to monitor actions and tables
 
 =cut
 

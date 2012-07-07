@@ -40,7 +40,7 @@ my $DEBUG = 0;
 my $LONG_ALLOWED = 0;
 
 my $VHOST = '/var/www/reports/';
-my (%options,%cgiparams,$OT,$cgi,$tt);
+my (%options,%cgiparams,%output,$OT,$cgi,$tt);
 
 my %rules = (
     dist    => qr/^([-\w.]+)$/i,
@@ -65,12 +65,7 @@ my %MERGED;
 init_options();
 process_dist()      if($cgiparams{dist});
 process_author()    if($cgiparams{author});
-
-#audit("DEBUG: response=" . $OT->response());
-
-print $cgi->header;
-print $OT->response();
-print "\n";
+writer();
 
 # -------------------------------------
 # Subroutines
@@ -91,13 +86,15 @@ sub init_options {
         error("Cannot configure '$options{database}' database\n")   unless($options{$db});
     }
 
-    #audit("DEBUG: configuration done");
-
-    $OT = OpenThought->new();
     $cgi = CGI->new;
 
+    $options{format} = $cgi->param('format') || 'html';
+    $options{format} = 'html' unless($options{format} =~ /html|txt|xml/);
+
+    #audit("DEBUG: configuration done");
+
     for my $key (keys %rules) {
-        my $val = $cgi->param("${key}_pref");
+        my $val = $cgi->param("${key}_pref") || $cgi->param($key);
         $cgiparams{$key} = $1   if($val =~ $rules{$key});
     }
 
@@ -136,7 +133,6 @@ sub init_options {
 
     #$cgiparams{dist} = 'App-Maisha';
     #$cgiparams{author} = 'BARBIE';
-
 }
 
 sub process_dist {
@@ -159,6 +155,7 @@ sub process_dist_short {
     push @where, "distmat=$cgiparams{distmat}"      if($cgiparams{distmat});
     push @where, "perlmat=$cgiparams{perlmat}"      if($cgiparams{perlmat});
     push @where, "oncpan=$cgiparams{oncpan}"        if($cgiparams{oncpan});
+    push @where, "version='$cgiparams{version}'"    if($cgiparams{version});
     my $where = @where ? ' AND ' . join(' AND ',@where) : '';
 
     my $dist = "'$cgiparams{dist}'";
@@ -187,49 +184,47 @@ sub process_dist_short {
     $oncpan = q!'cpan','upload'!    if($cgiparams{oncpan} && $cgiparams{oncpan} == 1);
     $oncpan = q!'backpan'!          if($cgiparams{oncpan} && $cgiparams{oncpan} == 2);
 
-    # ensure we cover all known versions
-    my @rows = $options{CPANSTATS}->get_query(
-                    'array',
-                    "SELECT DISTINCT(version) FROM uploads WHERE dist IN ($dist) AND type IN ($oncpan) ORDER BY released DESC" );
     my @versions;
-    for(@rows) {
-        next    if($cgiparams{distmat} && $cgiparams{distmat} == 1     && $_->[0]  =~ /_/i);
-        next    if($cgiparams{distmat} && $cgiparams{distmat} == 2     && $_->[0]  !~ /_/i);
-        push @versions, $_->[0];
+    if($cgiparams{version}) {
+        @versions = ($cgiparams{version});
+    } else {
+        # ensure we cover all known versions
+        my @rows = $options{CPANSTATS}->get_query(
+                        'array',
+                        "SELECT DISTINCT(version) FROM uploads WHERE dist IN ($dist) AND type IN ($oncpan) ORDER BY released DESC" );
+        for(@rows) {
+            next    if($cgiparams{distmat} && $cgiparams{distmat} == 1     && $_->[0]  =~ /_/i);
+            next    if($cgiparams{distmat} && $cgiparams{distmat} == 2     && $_->[0]  !~ /_/i);
+            push @versions, $_->[0];
+        }
     }
+
     my %versions = map {my $v = $_; $v =~ s/[^\w\.\-]/X/g; $_ => $v} @versions;
 
     #audit("DEBUG: versions=".Dumper(\%versions));
 
-    my $parms = {
-        versions        => \@versions,
-        versions_tag    => \%versions,
-        summary         => $summary,
-        distro          => $cgiparams{dist}
-    };
-
-    my $str;
-    $tt->process( 'dist_summary.html', $parms, \$str )
-            || error( $tt->error );
-
-    #audit("DEBUG: str=$str");
-    #audit("DEBUG: end process dist: $cgiparams{dist}");
-
-    my $html;
-    $html->{'reportsummary'} = $str;
-    $OT->param( $html );
+    %output = (
+        template  => 'dist_summary',
+        variables => {
+            versions        => \@versions,
+            versions_tag    => \%versions,
+            summary         => $summary,
+            distro          => $cgiparams{dist}
+        }
+    );
 }
 
 sub process_dist_long {
     #audit("DEBUG: start process dist (long): $cgiparams{dist}");
 
     my @where;
-    push @where, "perl NOT LIKE '%patch%'"      if($cgiparams{patches} && $cgiparams{patches} == 1);
-    push @where, "perl LIKE '%patch%'"          if($cgiparams{patches} && $cgiparams{patches} == 2);
-    push @where, "version NOT LIKE '%\\_%'"     if($cgiparams{distmat} && $cgiparams{distmat} == 1);
-    push @where, "version LIKE '%\\_%'"         if($cgiparams{distmat} && $cgiparams{distmat} == 2);
-    #push @where, "perl NOT REGEX '^5.(7|9|11)'" if($cgiparams{perlmat} && $cgiparams{perlmat} == 1);
-    #push @where, "perl REGEX '^5.(7|9|11)'"     if($cgiparams{perlmat} && $cgiparams{perlmat} == 2);
+    push @where, "perl NOT LIKE '%patch%'"          if($cgiparams{patches} && $cgiparams{patches} == 1);
+    push @where, "perl LIKE '%patch%'"              if($cgiparams{patches} && $cgiparams{patches} == 2);
+    push @where, "version NOT LIKE '%\\_%'"         if($cgiparams{distmat} && $cgiparams{distmat} == 1);
+    push @where, "version LIKE '%\\_%'"             if($cgiparams{distmat} && $cgiparams{distmat} == 2);
+    push @where, "version='$cgiparams{version}'"    if($cgiparams{version});
+    #push @where, "perl NOT REGEX '^5.(7|9|11)'"     if($cgiparams{perlmat} && $cgiparams{perlmat} == 1);
+    #push @where, "perl REGEX '^5.(7|9|11)'"         if($cgiparams{perlmat} && $cgiparams{perlmat} == 2);
     my $where = @where ? ' AND ' . join(' AND ',@where) : '';
 
     my $dist = "'$cgiparams{dist}'";
@@ -277,23 +272,15 @@ sub process_dist_long {
 
     #audit("DEBUG: versions=".Dumper(\%versions));
 
-    my $parms = {
-        versions        => \@versions,
-        versions_tag    => \%versions,
-        summary         => $summary,
-        distro          => $cgiparams{dist}
-    };
-
-    my $str;
-    $tt->process( 'dist_summary.html', $parms, \$str )
-            || error( $tt->error );
-
-    #audit("DEBUG: str=$str");
-    #audit("DEBUG: end process dist: $cgiparams{dist}");
-
-    my $html;
-    $html->{'reportsummary'} = $str;
-    $OT->param( $html );
+    %output = (
+        template  => 'dist_summary',
+        variables => {
+            versions        => \@versions,
+            versions_tag    => \%versions,
+            summary         => $summary,
+            distro          => $cgiparams{dist}
+        }
+    );
 }
 
 sub process_author {
@@ -326,7 +313,6 @@ sub process_author_short {
         $summary{ $row->{dist} }->{ UNKNOWN } = 0;
         $summary{ $row->{dist} }->{ ALL }     = 0;
     }
-
 
     $sql =  'SELECT x.dist,sum(s.pass) as pass,sum(s.fail) as fail,sum(s.na) as na,sum(s.unknown) as unknown ' .
             'FROM ixlatest AS x ' .
@@ -364,21 +350,12 @@ sub process_author_short {
     #audit("DEBUG: summary data retrieved");
     #audit("DEBUG: dists=".Dumper(\@dists));
 
-    my $parms = {
-        distributions   => \@dists,
-    };
-
-    my $str;
-    $tt->process( 'author_summary.html', $parms, \$str )
-            || error( $tt->error );
-
-    $str =~ s/\s{2,}/ /g;
-    #audit("DEBUG: str=[$str]");
-    #audit("DEBUG: end process author: $cgiparams{author}");
-
-    my $html;
-    $html->{'reportsummary'} = $str;
-    $OT->param( $html );
+    %output = (
+        template  => 'author_summary',
+        variables => {
+            distributions   => \@dists,
+        }
+    );
 }
 
 sub process_author_long {
@@ -437,21 +414,48 @@ sub process_author_long {
     #audit("DEBUG: summary data retrieved");
     #audit("DEBUG: dists=".Dumper(\@dists));
 
-    my $parms = {
-        distributions   => \@dists,
-    };
+    %output = (
+        template  => 'author_summary',
+        variables => {
+            distributions   => \@dists,
+        }
+    );
+}
 
-    my $str;
-    $tt->process( 'author_summary.html', $parms, \$str )
+sub writer {
+    my $result;
+
+    my $template = $output{template} . '.' . $options{format};
+    unless(-f "templates/$template") {
+        print $cgi->header('text/text','404 Page Not Found');
+        print "Invalid data request\n";
+        return;
+    }
+
+    $tt->process( $template, $output{variables}, \$result )
             || error( $tt->error );
 
-    $str =~ s/\s{2,}/ /g;
-    #audit("DEBUG: str=[$str]");
-    #audit("DEBUG: end process author: $cgiparams{author}");
+    $result =~ s/\s{2,}/ /g;
 
-    my $html;
-    $html->{'reportsummary'} = $str;
-    $OT->param( $html );
+    #audit("DEBUG: result=$result");
+
+    if($options{format} == 'xml') {
+        print $cgi->header('text/xml') . $result . "\n";
+    } elsif($options{format} == 'txt') {
+        print $cgi->header('text/text') . $result . "\n";
+    } else {
+        $OT = OpenThought->new();
+
+        my $html;
+        $html->{'reportsummary'} = $result;
+        $OT->param( $html );
+
+        #audit("DEBUG: response=" . $OT->response());
+
+        print $cgi->header;
+        print $OT->response();
+        print "\n";
+    }
 }
 
 sub error {
@@ -497,13 +501,14 @@ F<http://stats.cpantesters.org/>
 
 =head1 AUTHOR
 
-  Barbie       <barbie@cpan.org>   2008-present
+  Barbie, <barbie@cpan.org>
+  for Miss Barbell Productions <http://www.missbarbell.co.uk>.
 
 =head1 COPYRIGHT AND LICENSE
 
-  Copyright (C) 2008-2009 Barbie <barbie@cpan.org>
+  Copyright (C) 2008-2012 Barbie <barbie@cpan.org>
 
   This module is free software; you can redistribute it and/or
-  modify it under the same terms as Perl itself.
+  modify it under the Artistic License 2.0.
 
 =cut

@@ -103,6 +103,7 @@ vhost/cgi-bin/templates/public/layout.rss
 vhost/cgi-bin/templates/public/layout.yaml
 vhost/cgi-bin/templates/public/popup.html
 vhost/cgi-bin/templates/public/quote.html
+vhost/cgi-bin/templates/public/sidebar.html
 vhost/cgi-bin/templates/public/rssfeed.xml
 vhost/cgi-bin/templates/public/tinymce.html
 vhost/cgi-bin/templates/request/request_adminedit.html

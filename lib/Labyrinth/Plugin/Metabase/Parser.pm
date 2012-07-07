@@ -4,11 +4,11 @@ use strict;
 use warnings;
 
 use vars qw($VERSION);
-$VERSION = '1.00';
+$VERSION = '3.36';
 
 =head1 NAME
 
-Metabase::Parser - Plugin to parse Metabase Report pages.
+Labyrinth::Plugin::Metabase::Parser - Plugin to parse Metabase Report pages.
 
 =cut
 
