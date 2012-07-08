@@ -48,7 +48,7 @@ Labyrinth::Variables::init();   # initial standard variable values
 Labyrinth::Globals::LoadSettings("$BASE/cgi-bin/config/settings.ini");
 Labyrinth::Globals::DBConnect();
 
-    SetLogFile( FILE   => '/var/www/reports/toolkit/audit1.log',
+    SetLogFile( FILE   => '/var/www/reports/toolkit/logs/recent-audit.log',
                 USER   => 'labyrinth',
                 LEVEL  => 0,
                 CLEAR  => 1,

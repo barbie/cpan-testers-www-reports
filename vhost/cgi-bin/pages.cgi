@@ -2,7 +2,7 @@
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.36';
+$VERSION = '3.37';
 
 #----------------------------------------------------------
 # Additional Modules

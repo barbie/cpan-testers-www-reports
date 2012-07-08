@@ -118,8 +118,8 @@ sub Process {
         my $cnt = IndexPages($cpan,$dbi,$progress);
         
         # shouldn't really hard code these :)
-        my ($query,$loop,$limit) = ('GetRequests',20,5);
-        ($query,$loop,$limit) = ('GetOlderRequests',20,5)   if($quickhit == 1);
+        my ($query,$loop,$limit) = ('GetRequests',10,10);
+        ($query,$loop,$limit) = ('GetOlderRequests',1,100)  if($quickhit == 1);
         ($query,$loop,$limit) = ('GetSmallRequests',2,10)   if($quickhit == 3);
         ($query,$loop,$limit) = ('GetLargeRequests',2,25)   if($quickhit == 5); # typically these are long running author searches
 
@@ -144,7 +144,8 @@ sub Process {
 
         my $req = _request_count($dbi);
         $progress->( "Processed $cnt pages, $req requests remaining." ) if(defined $progress);
-        sleep(300)   if($cnt == 0 || $req == 0);
+        #sleep(300)   if($cnt == 0 || $req == 0);
+        last         if($cnt == 0 || $req == 0);
 
         my $age = _request_oldest($dbi);
 
@@ -203,7 +204,7 @@ sub IndexPages {
         }
 
         # remove requests
-        $dbi->DoQuery('DeletePageRequests',$index->{type},$index->{name});
+        $dbi->DoQuery('DeletePageRequests',{ids => '0'},$index->{type},$index->{name});
     }
 
     return scalar(@index);
@@ -217,6 +218,7 @@ sub AuthorPages {
     my ($cpan,$dbi,$name,$progress) = @_;
     return  unless(defined $name);
 
+    my @ids = (0);
     my %vars = %{ clone (\%tvars) };
 #LogDebug("AuthorPages: before tvars=".total_size(\%tvars)." bytes");
 
@@ -228,46 +230,61 @@ sub AuthorPages {
             my $cache = sprintf "%s/static/author/%s", $settings{webdir}, substr($name,0,1);
             mkpath($cache);
 
-            my (@reports,%reports,%summary);
+            my (@reports,%reports,%summary,$next);
             my $destfile = "$cache/$name.json";
             my $fromid   = '';
             my $lastid   = 0;
 
-            # if we have a summary, process all reports to the last update from the JSON cache
-
+            # load the summary, if we have one
             my @summary = $dbi->GetQuery('hash','GetAuthorSummary',$name);
             $lastid = $summary[0]->{lastid} if(@summary);
 
+            # load JSON, if we have one
             if(-f $destfile && $lastid) {
                 my $data  = read_file($destfile);
-                my $store = decode_json($data);
+                my $store;
+                eval { $store = decode_json($data); };
+                if(!$@ && $store) {
+                    my %ids;
+                    for my $row (@$store) {
+                        next    if($lastid < $row->{id});
+                        next    if($dists{$row->{dist}} ne $row->{version});    # ensure this is the latest dist version
+                        next    if($ids{$row->{id}});	# auto clean duplicates
 
-                for my $row (@$store) {
-                    next    if($lastid < $row->{id});
-                    next    if($dists{$row->{dist}} ne $row->{version});    # ensure this is the latest dist version
+                        $ids{$row->{id}} = 1;
 
-                    unshift @{$reports{$row->{dist}}}, $row;
-                    $summary{$row->{dist}}->{ $row->{status} }++;
-                    $summary{$row->{dist}}->{ 'ALL' }++;
-                    push @reports, $row;
+                        unshift @{$reports{$row->{dist}}}, $row;
+                        $summary{$row->{dist}}->{ $row->{status} }++;
+                        $summary{$row->{dist}}->{ 'ALL' }++;
+                        push @reports, $row;
+                    }
+
+                    $fromid = " AND id > $lastid "  if($lastid); 
                 }
-
-                $fromid = " AND id > $lastid "  if($lastid); 
             }
 
-            # process all the reports from the last ID used
+            # if we have ids in the page requests, just update these
+            my @requests = $dbi->GetQuery('hash','GetRequestIDs',{names => $name},'author');
+            my %requests = map { $_->{id} => 1 } grep { $_->{id} } @requests;
+            if(keys %requests) {
+                $next = $dbi->Iterator('hash','GetReportsByIDs',{ids=>join(',',keys %requests)});
+                push @ids, keys %requests;
 
-            my $next;
-            if(scalar(@dists) > 300) {
-                # a fairly constant 83-93 seconds regardless of volume
-                $next  = $dbi->Iterator('hash','GetAuthorDistReports',{fromid=>$fromid},$name);
             } else {
-                # 3-73 secs for dists of 1-100
-                my $lookup = 'AND ( ' . join(' OR ',map {"(dist = '$_->{dist}' AND version = '$_->{version}')"} @dists) . ' )';
-                $next  = $dbi->Iterator('hash','GetAuthorDistReports3',{lookup=>$lookup,fromid=>$fromid});
+                # process all the reports from the last ID used
+                if(scalar(@dists) > 300) {
+                    # a fairly constant 83-93 seconds regardless of volume
+                    $next = $dbi->Iterator('hash','GetAuthorDistReports',{fromid=>$fromid},$name);
+                } else {
+                    # 3-73 secs for dists of 1-100
+                    my $lookup = 'AND ( ' . join(' OR ',map {"(dist = '$_->{dist}' AND version = '$_->{version}')"} @dists) . ' )';
+                    $next = $dbi->Iterator('hash','GetAuthorDistReports3',{lookup=>$lookup,fromid=>$fromid});
+                }
             }
 
             while(my $row = $next->()) {
+                next    if($dists{$row->{dist}} ne $row->{version});    # ensure this is the latest dist version
+
                 $row->{perl} = "5.004_05" if $row->{perl} eq "5.4.4"; # RT 15162
                 $row->{perl} =~ s/patch.*/patch blead/  if $row->{perl} =~ /patch.*blead/;
                 my ($osname) = $cpan->OSName($row->{osname});
@@ -334,7 +351,7 @@ sub AuthorPages {
 #LogDebug("AuthorPages: after  tvars=".total_size(\%tvars)." bytes");
 
     # remove requests
-    $dbi->DoQuery('DeletePageRequests','author',$name);
+    $dbi->DoQuery('DeletePageRequests',{ids => join(',',@ids)},'author',$name);
 }
 
 # - build distro pages
@@ -345,6 +362,7 @@ sub DistroPages {
     my ($cpan,$dbi,$name,$progress) = @_;
     return  unless(defined $name);
 
+    my @ids = (0);
     my %vars = %{ clone (\%tvars) };
 
 #LogDebug("DistroPages: before tvars=".total_size(\%tvars)." bytes");
@@ -352,10 +370,11 @@ sub DistroPages {
     my $exceptions = $cpan->exceptions;
     my $symlinks   = $cpan->symlinks;
     my $merged     = $cpan->merged;
+    my $ignore     = $cpan->ignore;
 
     my @delete = ($name);
-    if($name =~ /^[A-Za-z0-9][A-Za-z0-9\-_+]*$/
-                || ($exceptions && $name =~ /$exceptions/)) {
+    if(   ( $name =~ /^[A-Za-z0-9][A-Za-z0-9\-_+]*$/ && !$ignore->{$name} )
+       || ( $exceptions && $name =~ /$exceptions/ ) ) {
 
         # Some distributions are known by multiple names. Rather than create
         # pages for each one, we try and merge them together into one.
@@ -375,9 +394,9 @@ sub DistroPages {
 
         my @valid = $dbi->GetQuery('hash','FindDistro',{dist=>$dist});
         if(@valid) {
+            my (@reports,%authors,%version,$summary,$byversion,$next);
             my $fromid = '';
             my $lastid = 0;
-            my (@reports,%authors,%version,$summary,$byversion);
 
             # determine max dist/version for each pause id
             for(@valid) {
@@ -391,31 +410,47 @@ sub DistroPages {
             my @summary = $dbi->GetQuery('hash','GetDistroSummary',$name);
             $lastid = $summary[0]->{lastid} if(@summary);
 
-             my $cache = sprintf "%s/static/distro/%s", $settings{webdir}, substr($name,0,1);
-             my $destfile = "$cache/$name.json";
-             mkpath($cache);
+            my $cache = sprintf "%s/static/distro/%s", $settings{webdir}, substr($name,0,1);
+            my $destfile = "$cache/$name.json";
+            mkpath($cache);
  
-             # load JSON data if available
+            # load JSON data if available
             if(-f $destfile && $lastid) {
                 my $json = read_file($destfile);
-                my $data = decode_json($json);
-                for my $row (@$data) {
-                    next    if($lastid < $row->{id});
-                    push @reports, $row;
+                my $data;
+                eval { $data = decode_json($json); };
+                if(!$@ && $data) {
+                    my %ids;
+                    for my $row (@$data) {
+                        next    if($lastid < $row->{id});
+                        next    if($ids{$row->{id}});	# auto clean duplicates
 
-                    $summary->{ $row->{version} }->{ $row->{status} }++;
-                    $summary->{ $row->{version} }->{ 'ALL' }++;
-                    unshift @{ $byversion->{ $row->{version} } }, $row;
+                        $ids{$row->{id}} = 1;
+                        push @reports, $row;
 
-                    # record reports from max versions
-                    unshift @{ $reports{$row->{version}} }, $row    if(defined $reports{$row->{version}});
+                        $summary->{ $row->{version} }->{ $row->{status} }++;
+                        $summary->{ $row->{version} }->{ 'ALL' }++;
+                        unshift @{ $byversion->{ $row->{version} } }, $row;
+
+                        # record reports from max versions
+                        unshift @{ $reports{$row->{version}} }, $row    if(defined $reports{$row->{version}});
+                    }
+
+                    $fromid = " AND id > $lastid "; 
                 }
-
-                $fromid = " AND id > $lastid "; 
             }
 
-            my @rows = $dbi->GetQuery('hash','GetDistroReports',{fromid => $fromid, dist => $dist});
-            for my $row (@rows) {
+            # if we have ids in the page requests, just update these
+            my @requests = $dbi->GetQuery('hash','GetRequestIDs',{names => $dist},'distro');
+            my %requests = map { $_->{id} => 1 } grep { $_->{id} } @requests;
+            if(keys %requests) {
+                $next = $dbi->Iterator('hash','GetReportsByIDs',{ids=>join(',',keys %requests)});
+                push @ids, keys %requests;
+            } else {
+                $next = $dbi->Iterator('hash','GetDistroReports',{fromid => $fromid, dist => $dist});
+            }
+
+            while(my $row = $next->()) {
                 $row->{perl} = "5.004_05"               if $row->{perl} eq "5.4.4"; # RT 15162
                 $row->{perl} =~ s/patch.*/patch blead/  if $row->{perl} =~ /patch.*blead/;
                 my ($osname) = $cpan->OSName($row->{osname});
@@ -437,7 +472,6 @@ sub DistroPages {
                 # record reports from max versions
                 unshift @{ $reports{$row->{version}} }, $row    if($reports{$row->{version}});
                 $version{$row->{version}}->{new} = 1;
-
             }
 
             for my $version ( keys %$byversion ) {
@@ -446,7 +480,7 @@ sub DistroPages {
             }
 
             # ensure we cover all known versions
-            @rows = $dbi->GetQuery('array','GetDistVersions',{dist=>$dist});
+            my @rows = $dbi->GetQuery('array','GetDistVersions',{dist=>$dist});
             my @versions = map{$_->[0]} @rows;
             my %versions = map {my $v = $_; $v =~ s/[^\w\.\-]/X/g; $_ => $v} @versions;
 
@@ -544,9 +578,10 @@ sub DistroPages {
     }
 
 #LogDebug("DistroPages: after tvars=".total_size(\%tvars)." bytes");
+#LogDebug("DistroPages: ids=@ids, distros=@delete");
 
     # remove requests
-    $dbi->DoQuery('DeletePageRequests','distro',$_) for(@delete);
+    $dbi->DoQuery('DeletePageRequests',{ids => join(',',@ids)},'distro',$_) for(@delete);
 }
 
 sub StatsPages {

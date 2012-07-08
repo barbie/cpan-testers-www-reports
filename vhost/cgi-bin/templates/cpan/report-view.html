@@ -1,6 +1,6 @@
 [% 
 
-  rawlink = '/cgi-bin/pages.cgi?act=cpan-report&amp;raw=1&amp;id=' ;
+  rawlink = '' ;
 
   IF article.dist ; THEN ;
     link = '<a href="http://search.cpan.org/dist/' _ article.dist _ '">' _ article.dist _ '-' _ article.version _ "</a>" ;
@@ -11,14 +11,14 @@
 
     IF article.guid ; THEN ;
       crumb1_name = article.guid ;
-      rawlink = rawlink _ article.guid ;
+      rawlink = '/cpan/report/' _ article.guid _ '?raw=1' ;
 
       htmltitle = 'Report for ' _ article.dist _ '-' _ article.version ;
       title     = 'Report for ' _ link ;
 
     ELSE ;
       crumb1_name = article.id ;
-      rawlink = rawlink _ article.id ;
+      rawlink = '/cpan/report/' _ article.id _ '?raw=1' ;
 
       htmltitle = 'Report for ' _ article.dist _ '-' _ article.version ;
       title     = 'Report for ' _ link ;

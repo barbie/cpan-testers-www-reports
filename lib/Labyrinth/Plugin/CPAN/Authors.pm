@@ -59,9 +59,17 @@ List reports for authors dists.
 
 sub Status {
     my @rows = $dbi->GetQuery('hash','StatusRequest');
-    return  unless(@rows);
+    $tvars{status} = $rows[0]	if(@rows);
 
-    $tvars{status} = $rows[0];
+    my @max = $dbi->GetQuery('array','MaxStatReport');
+    if(@max) {
+        my @rep = $dbi->GetQuery('hash','GetStatReport',$max[0]->[0]);
+        if(@rep) {
+            my @date = $rep[0]->{fulldate} =~ /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})/;
+            $rep[0]->{date} = sprintf "%04d-%02d-%02d %02d:%02d:00", @date;
+            $tvars{report} = $rep[0];
+        }
+    }
 }
 
 sub Basic {

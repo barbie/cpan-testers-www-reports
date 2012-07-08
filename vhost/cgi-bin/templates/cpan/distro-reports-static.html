@@ -63,7 +63,7 @@ different release versions of that operating system.</p>
 <p>To view individual reports, please click the grade text associated with each report.</p>
 
 [% FOREACH version = versions %]
-  <h2><a name="[% versions_tag.$version -%]" />[% builder.distribution %] [% version | html %] 
+  <h2><a name="[% versions_tag.$version -%]">[% builder.distribution %] [% version | html %]</a> 
   [% IF summary.$version.keys %]
     ([%- FOREACH status = summary.$version.keys.sort -%]
       [%- c = summary.$version.$status -%]

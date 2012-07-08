@@ -30,7 +30,7 @@ BEGIN {
 #----------------------------------------------------------
 # Additional Modules
 
-use lib qw|../cgi-bin/lib ../cgi-bin/plugins|;
+use lib ("$BASE/cgi-bin/lib", "$BASE/cgi-bin/plugins");
 
 use Labyrinth::Audit;
 use Labyrinth::DBUtils;
@@ -48,7 +48,7 @@ Labyrinth::Variables::init();   # initial standard variable values
 Labyrinth::Globals::LoadSettings("$BASE/cgi-bin/config/settings.ini");
 Labyrinth::Globals::DBConnect();
 
-    SetLogFile( FILE   => '/var/www/reports/toolkit/audit2.log',
+    SetLogFile( FILE   => '/var/www/reports/toolkit/logs/monitor-audit.log',
                 USER   => 'labyrinth',
                 LEVEL  => 0,
                 CLEAR  => 1,
@@ -57,19 +57,10 @@ Labyrinth::Globals::DBConnect();
 my $content = Labyrinth::Plugin::Content->new();
 $content->GetVersion();
 
-_log("Start");
-
 my $monitor = Labyrinth::Plugin::CPAN::Monitor->new();
 $monitor->Snapshot(\&_log);
 $monitor->Graphs(\&_log);
 
-_log("Finish");
-
-sub _log {
-    my @date = localtime(time);
-    my $date = sprintf "%04d/%02d/%02d %02d:%02d:%02d", $date[5]+1900, $date[4]+1, $date[3], $date[2], $date[1], $date[0];
-    print "$date " . join(' ',@_ ). "\n";
-}
 __END__
 
 =head1 AUTHOR

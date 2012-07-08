@@ -222,8 +222,8 @@ sub _write_image {
         axis_space          => 4,
 
         legend_placement    => 'RC',
-        #dclrs               => [qw(lpurple blue cyan green orange red dred lbrown pink yellow dpurple)],
-        dclrs               => [@COLOURS],
+        dclrs               => [qw(lpurple blue cyan green orange red dred lbrown pink yellow dpurple)],
+        #dclrs               => [@COLOURS],
         boxclr              => '#eeeeee',
         labelclr            => 'dgray',
         axislabelclr        => 'dgray',
@@ -370,47 +370,47 @@ sub _make_graph_url {
 
 sub _set_max {
     my $max = shift;
-    my ($limit,$max_limit) = (10,10000000);
+    my $lmt = 10;
 
-    return $limit   if($max <= $limit);
-    while($limit < $max_limit) {
-        if($max > $limit) {
-            $limit *= 10;
-            next;
-        }
+    return $lmt   if($max <= $lmt);
 
-        my $inc10 = int($limit / 10);
-        my $inc50 = int($limit / 20);
-        for(my $inc = $inc10 ; $inc < $limit ; $inc += $inc50) {
-            #print STDERR "\n# max=$max, limit=$limit, inc=$inc\n";
-            return $inc if($max <= $inc);
-        }
+    my $len = length("$max") - 1;
+    my $num = substr("$max",0,1);
 
-        return $limit;
+    if($max < 100_000) {
+        my $lmt1 =  (10**$len) *  $num;
+        my $lmt2 = ((10**$len) *  $num) + ((1**($len-1)) * 5);
+        my $lmt3 =  (10**$len) * ($num + 1);
+
+        return $lmt1    if($max <= $lmt1);
+        return $lmt2    if($max <= $lmt2);
+        return $lmt3    if($max <= $lmt3);
     }
 
-    return $max_limit;
+    $num += ($num % 2) ? 1 : 2;
+
+    return (10**$len) * $num;
 }
 
 sub _set_range {
     my ($min,$max) = @_;
-    my $step = 1;
 
-       if($max <=  10)      { $step = 1        }
-    elsif($max <=  100)     { $step = 10       }
-    elsif($max <=  500)     { $step = 50       }
-    elsif($max <=  1000)    { $step = 100      }
-    elsif($max <=  10000)   { $step = 1000     }
-    elsif($max <=  100000)  { $step = 10000    }
-    elsif($max <=  1000000) { $step = 100000   }
-    else                    { $step = 1000000  }
+    my $len = length("$max") - 2;
+    my $pc0 = $max / 10;
+
+    my $x1 = 10**$len * 1;
+    my $x2 = 10**$len * 2;
+    my $x5 = 10**$len * 5;
+    my $x0 = 10**$len * 10;
+
+    my $step = $pc0 <= $x1 ? $x1 : $pc0 <= $x2 ? $x2 : $pc0 <= $x5 ? $x5 : $x0;
 
     my @r;
     for(my $r = $min; $r < ($max+$step); $r += $step) {
-        my $x = $r < 1000000 ? $r < 1000 ? $r : ($r/1000) . 'k' : ($r/1000000) . 'm';
+        my $x = $r < 1000 ? $r : $r < 1000000 ? ($r/1000) . 'k' : ($r/1000000) . 'm';
         push @r, $x;
     };
-    #print "range=".(join('|',@r))."\n";
+
     return join('|',@r);
 }
 

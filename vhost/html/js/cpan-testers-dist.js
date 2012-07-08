@@ -165,8 +165,12 @@ function selectReports(vers) {
 
 function init() {
   vers = getparam('version');
-  dist = document.getElementById('dist_pref');
-  distvers = dist.value + '-' + vers;
+  if(vers) {
+    dist = document.getElementById('dist_pref');
+    distvers = dist.value + '-' + vers;
+  } else {
+    distvers = versions[0];
+  }
 
   readCookies();
   loadVersionDropdown();

@@ -1,6 +1,6 @@
 Changes for the CPAN Testers Reports website
 
-3.37    current
+3.37    08/07/2012
         - renumbered versions to reflect website versions.
         - upgraded Labyrinth Core to version 5.12.
         - upgraded Labyrinth Core Plugin to version 5.10.
