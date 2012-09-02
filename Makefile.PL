@@ -28,7 +28,7 @@ WriteMakefile(
         'GD::Graph::colour'                 => '0',
         'HTML::Entities'                    => '0',
         'JSON::XS'                          => '0',
-        'Labyrinth'                         => '5.12',
+        'Labyrinth'                         => '5.13',
         'Labyrinth::Plugin::Core'           => '5.10',
         'Labyrinth::Plugin::Requests'       => '1.00',
         'Metabase::Resource'                => '0',
