@@ -3,6 +3,8 @@ Changes for the CPAN Testers Reports website
 3.38    2012-09-01
         - added crawler detection.
         - prevent Author & Distro crawler requests being passed to Builder.
+        - upgraded Labyrinth Core to version 5.13.
+        - change file dates changed to meet W3CDTF standards.
 
 3.37    2012-07-08
         - renumbered versions to reflect website versions.
