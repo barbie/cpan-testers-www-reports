@@ -31,7 +31,7 @@ function setDisplayedVersion() {
   rows.setAttribute('id','report_data');
   var select  = document.getElementById('version');
   var svalue  = select.value;
-  var reports = results[select.value];
+  var reports = results[svalue];
   var header  = distros[svalue][0].header;
   var modhead = document.getElementById('modulehead');
   modhead.innerHTML = header;

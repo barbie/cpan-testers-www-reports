@@ -1,6 +1,6 @@
 Changes for the CPAN Testers Reports website
 
-3.39    current
+3.39    2012-09-04
         - added iheart CSS.
         - versions with TRIAL now designated dev releases. [RT#77681 - CJM]
         - added distro version summary header. [RT#74905 - BAREFOOT]
