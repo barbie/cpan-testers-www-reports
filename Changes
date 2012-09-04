@@ -1,5 +1,8 @@
 Changes for the CPAN Testers Reports website
 
+3.39    current
+        - added iheart CSS.
+
 3.38    2012-09-01
         - added crawler detection.
         - prevent Author & Distro crawler requests being passed to Builder.

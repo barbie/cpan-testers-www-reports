@@ -229,3 +229,7 @@ p.caption {clear:both; margin:0.5em 0 2.0em 20px; text-align:left; color:rgb(80,
 .mceToolbar table    { border: 0px; border-collapse: collapse; }
 .mceToolbar table th { border: 0px; padding: 0px; height: 1em; }
 .mceToolbar table td { border: 0px; padding: 0px; height: 1em; }
+
+#iheart a img,
+#iheart a:hover img,
+#iheart a:visited img { border:0 }
