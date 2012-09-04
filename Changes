@@ -2,6 +2,7 @@ Changes for the CPAN Testers Reports website
 
 3.39    current
         - added iheart CSS.
+        - versions with TRIAL now designated dev releases. [RT#77681 - CJM]
 
 3.38    2012-09-01
         - added crawler detection.

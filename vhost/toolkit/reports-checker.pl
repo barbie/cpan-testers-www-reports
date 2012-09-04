@@ -84,7 +84,7 @@ if(!GetOptions( \%options, 'update|u', 'verbose|v')) {
 
     prep_hashes($cpan,$dbx);
 
-#    check_author_summary($cpan,$dbx);
+    check_author_summary($cpan,$dbx);
 #    check_distro_summary($cpan,$dbx);
 
 #    check_author_static($cpan,$dbx);
@@ -142,11 +142,8 @@ sub check_author_summary {
 
             my $done = 0;
             for my $dist (@{$tvars->{distributions}}) {
-                for my $old (keys %{$dist->{summary}}) {
-                    next    unless($old =~ /^[A-Z]+$/);
-                    my $new = uc $old;
-                    $dist->{summary}{$new} = $dist->{summary}{$old};
-                    delete $dist->{summary}{$old};
+                if($dist->{version} =~ /-TRIAL/}) {
+                    $dist->{cssrelease} = 'dev';
                     $done = 1;
                 }
             }
@@ -157,10 +154,6 @@ sub check_author_summary {
             $dbx->DoQuery('UpdateAuthorSummary',$summary[0]->{lastid},$dataset,$summary[0]->{name}) if($options{update});
             _log("FIXED: $row->[0]")                if($options{verbose});
             $fixed++;
-        } else {
-            $dbx->DoQuery('PushAuthor',$row->[0])   if($options{update});
-            _log("UPDATE: $row->[0]")               if($options{verbose});
-            $pushed++;
         }
     }
 
@@ -538,17 +531,25 @@ sub check_author_json {
         if(-f $file) {
             my $json = read_file($file);
             my $data = decode_json($json);
+            next    unless(scalar(@$data));
 
-            if(scalar(@$data)) {
-                if($data->[0]->{fulldate}) {
-                    $ok++;
-                } else {
-                    $updated++;
-                    $dbx->DoQuery('PushAuthor',$name)    if($options{update});
-                    _log("UPDATE: $name")                if($options{verbose});
+            my $trial = 0;
+            for my $d (@$data) {
+                if($d->{version} =~ /-TRIAL/) {
+                    $trial = 1;
+                    $d->{cssrelease} = 'dev';
                 }
+            }
+
+            if($trial) {
+                $updated++  if($trial);
+                if($options{update}) {
+                    $json = encode_json($data);
+                    write_file($file,$json);
+                }
+                _log("UPDATE: $name")                if($options{verbose});
             } else {
-                $empty++;
+                $ok++;
             }
         } else {
             $missing++;
@@ -575,21 +576,29 @@ sub check_distro_json {
         next    if($ignore->{$name});
 
         my $file = sprintf "$DISTROS/%s/%s.json", uc substr($name,0,1), $name;
+
         if(-f $file) {
             my $json = read_file($file);
             my $data = decode_json($json);
+            next    unless(scalar(@$data));
 
-            if(scalar(@$data) && $data->[0]->{fulldate}) {
-                $ok++;
-            } else {
-                my @count = $dbx->GetQuery('array','CountDistroReports',$dist);
-                if(@count && $count[0]->[0] > 0) {
-                    $updated++;
-                    $dbx->DoQuery('PushDistro',$name)    if($options{update});
-                    _log("UPDATE: $name")                if($options{verbose});
-                } else {
-                    $empty++;
+            my $trial = 0;
+            for my $d (@$data) {
+                if($d->{version} =~ /-TRIAL/) {
+                    $trial = 1;
+                    $d->{cssrelease} = 'dev';
                 }
+            }
+
+            if($trial) {
+                $updated++  if($trial);
+                if($options{update}) {
+                    $json = encode_json($data);
+                    write_file($file,$json);
+                }
+                _log("UPDATE: $name")                if($options{verbose});
+            } else {
+                $ok++;
             }
         } else {
             $missing++;

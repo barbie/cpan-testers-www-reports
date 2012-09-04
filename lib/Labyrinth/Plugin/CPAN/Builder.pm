@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use vars qw($VERSION);
-$VERSION = '3.38';
+$VERSION = '3.39';
 
 =head1 NAME
 
@@ -307,7 +307,7 @@ sub AuthorPages {
                 $dist->{letter}     = substr($dist->{dist},0,1);
                 $dist->{reports}    = 1 if($reports{$dist->{dist}});
                 $dist->{summary}    = $summary{$dist->{dist}};
-                $dist->{cssrelease} = $dist->{version} =~ /_/ ? 'rel' : 'off';
+                $dist->{cssrelease} = $dist->{version} =~ /(_|-TRIAL)/ ? 'rel' : 'off';
                 $dist->{csscurrent} = $dist->{type} eq 'backpan' ? 'back' : 'cpan';
             }
 
@@ -487,7 +487,7 @@ sub DistroPages {
             my %release;
             for my $version ( keys %versions ) {
                 $release{$version}->{csscurrent} = $version{$version}->{type} eq 'backpan' ? 'back' : 'cpan';
-                $release{$version}->{cssrelease} = $version =~ /_/ ? 'dev' : 'off';
+                $release{$version}->{cssrelease} = $version =~ /(_|-TRIAL)/ ? 'dev' : 'off';
             }
 
             my ($stats,$oses);
