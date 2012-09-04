@@ -20,7 +20,7 @@ var distros = {
 [% FOREACH version = versions -%]
 [% IF comma == 1 %],
 [% END %][% comma = 1 -%]
-  "[% builder.distribution %]-[% version %]": [ {oncpan:"[% release.$version.csscurrent %]", distmat:"[% release.$version.cssrelease %]"} ][% END -%]
+  "[% builder.distribution %]-[% version %]": [ {oncpan:"[% release.$version.csscurrent %]", distmat:"[% release.$version.cssrelease %]", header:"[% release.$version.header %]"} ][% END -%]
 
 };
 

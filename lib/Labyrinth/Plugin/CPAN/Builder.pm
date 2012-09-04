@@ -95,14 +95,16 @@ sub BasePages {
     $tvars{static}  = 1;
 
     $tvars{content} = "content/welcome.html";
-    Transform( 'cpan/layout-static.html', \%tvars, 'index.html' );
+    my $text = Transform( 'cpan/layout-static.html', \%tvars );
+    overwrite_file( $cache . '/index.html', $text );
 
     my $site = Labyrinth::Plugin::Articles::Site->new();
     $tvars{content} = "articles/arts-item.html";
     for my $page (qw(help about)) {
         $cgiparams{'name'} = $page;
         $site->Item();
-        Transform( 'cpan/layout-static.html', \%tvars, "page/$page.html" );
+        $text = Transform( 'cpan/layout-static.html', \%tvars );
+        overwrite_file( "$cache/page/$page.html", $text );
     }
 }
 
@@ -190,7 +192,8 @@ sub IndexPages {
         $tvars{cache}   = $cache;
         $tvars{content} = "cpan/$type-list.html";
         $tvars{list}    = \@list if(@list);
-        Transform( 'cpan/layout-static.html', \%tvars, 'index.html' );
+        my $text = Transform( 'cpan/layout-static.html', \%tvars );
+        overwrite_file( $cache . '/index.html', $text );
 
         if($type eq 'distro') {
             $cache = sprintf "%s/stats/%s/%s", $settings{webdir}, $type, substr($index->{name},0,1);
@@ -200,7 +203,8 @@ sub IndexPages {
             #$progress->( ".. processing $index->{type} $index->{name} - $destfile" )     if(defined $progress);
             $tvars{content} = 'cpan/stats-distro-index.html';
             $tvars{cache}   = $cache;
-            Transform( 'cpan/layout-stats-static.html', \%tvars, 'index.html' );
+            $text = Transform( 'cpan/layout-stats-static.html', \%tvars );
+            overwrite_file( $cache . '/index.html', $text );
         }
 
         # remove requests
@@ -337,14 +341,13 @@ sub AuthorPages {
             $vars{processed}       = formatDate(8);
 
             # build other static pages
-            $destfile = "$name.html";
-            Transform( 'cpan/layout-static.html', \%vars, $destfile );
+            my $text = Transform( 'cpan/layout-static.html', \%vars );
+            overwrite_file( "$cache/$name.html", $text );
 
-            $destfile = "$name.js";
-            Transform( 'cpan/author.js', \%vars, $destfile );
+            $text = Transform( 'cpan/author.js', \%vars );
+            overwrite_file( "$cache/$name.js", $text );
 
-            $destfile = "$cache/$name.json";
-            overwrite_file( $destfile, _make_json( \@reports ) );
+            overwrite_file( "$cache/$name.json", _make_json( \@reports ) );
         }
     }
 
@@ -488,6 +491,21 @@ sub DistroPages {
             for my $version ( keys %versions ) {
                 $release{$version}->{csscurrent} = $version{$version}->{type} eq 'backpan' ? 'back' : 'cpan';
                 $release{$version}->{cssrelease} = $version =~ /(_|-TRIAL)/ ? 'dev' : 'off';
+                $release{$version}->{header} = "<h2>$dist $version ";
+                if($summary->{$version}{ALL}) {
+                    $release{$version}->{header} .= "(<b> ";
+                    for my $status (sort keys %{$summary->{$version}}) {
+                        $release{$version}->{header} .= "<span class='$status'>$summary->{$version}{$status} $status";
+                        if($summary->{$version}{$status} > 1) {
+                            $release{$version}->{header} .= $status eq 'PASS' ? 'es' : 's';
+                        }
+                        $release{$version}->{header} .= "</span> ";
+                    }
+                    $release{$version}->{header} .= "</b>)";
+                } else {
+                    $release{$version}->{header} .= "(No reports)";
+                }
+                $release{$version}->{header} .= "</h2>";
             }
 
             my ($stats,$oses);
@@ -540,23 +558,22 @@ sub DistroPages {
             $vars{processed}       = formatDate(8);
 
             # build other static pages
-            $destfile = "$name.html";
             $vars{content} = 'cpan/distro-reports-static.html';
-            Transform( 'cpan/layout-static.html', \%vars, $destfile );
+            my $text = Transform( 'cpan/layout-static.html', \%vars );
+            overwrite_file( "$cache/$name.html", $text );
 
-            $destfile = "$name.js";
-            Transform( 'cpan/distro.js', \%vars, $destfile );
+            $text = Transform( 'cpan/distro.js', \%vars );
+            overwrite_file( "$cache/$name.js", $text );
 
-            $destfile = "$cache/$name.json";
-            overwrite_file( $destfile, _make_json( \@reports ) );
+            overwrite_file( "$cache/$name.json", _make_json( \@reports ) );
 
             $cache = sprintf "%s/stats/distro/%s", $settings{webdir}, substr($name,0,1);
             mkpath($cache);
             $vars{cache} = $cache;
 
-            $destfile = "$name.html";
             $vars{content} = 'cpan/stats-distro-static.html';
-            Transform( 'cpan/layout-stats-static.html', \%vars, $destfile );
+            $text = Transform( 'cpan/layout-stats-static.html', \%vars );
+            overwrite_file( "$cache/$name.html", $text );
 
             # generate symbolic links where necessary
             if($merged->{$name}) {
@@ -621,6 +638,7 @@ sub StatsPages {
     }
 
     my @versions = sort {_versioncmp($b,$a)} keys %perls;
+    my $text;
 
     # page perl perl version cross referenced with platforms
     my %perl_osname_all;
@@ -658,7 +676,8 @@ sub StatsPages {
         $tvars{cnt_modules} = scalar keys %dist_for_perl;
         $tvars{cache}       = $cache;
         $tvars{content}     = 'cpan/stats-perl-platform.html';
-        Transform( 'cpan/layout-stats-static.html', \%tvars, $destfile );
+        $text = Transform( 'cpan/layout-stats-static.html', \%tvars );
+        overwrite_file( "$cache/$destfile", $text );
     }
 
     my @perl_osnames;
@@ -701,7 +720,8 @@ sub StatsPages {
         $tvars{cnt_modules} = $cnt;
         $tvars{cache}       = $cache;
         $tvars{content}     = 'cpan/stats-perl-version.html';
-        Transform( 'cpan/layout-stats-static.html', \%tvars, $destfile );
+        $text = Transform( 'cpan/layout-stats-static.html', \%tvars );
+        overwrite_file( "$cache/$destfile", $text );
     }
 
     # how many test reports per platform per perl version?
@@ -710,14 +730,16 @@ sub StatsPages {
     $tvars{perlv}   = \@data_perlplat;
     $tvars{cache}   = $cache;
     $tvars{content} = 'cpan/stats-perl-platform-count.html';
-    Transform( 'cpan/layout-stats-static.html', \%tvars, $destfile );
+    $text = Transform( 'cpan/layout-stats-static.html', \%tvars );
+    overwrite_file( "$cache/$destfile", $text );
 
     # generate index.html
     $destfile       = "index.html";
     $tvars{perls}   = \@perls;
     $tvars{cache}   = $cache;
     $tvars{content} = 'cpan/stats-index.html';
-    Transform( 'cpan/layout-stats-static.html', \%tvars, $destfile );
+    $text = Transform( 'cpan/layout-stats-static.html', \%tvars );
+    overwrite_file( "$cache/$destfile", $text );
 
 #    # create symbolic links
 #    for my $link ('headings', 'background.png', 'style.css', 'cpan-testers.css') {
@@ -765,7 +787,8 @@ sub RecentPage {
     $tvars{cache}   = $cache;
     $tvars{content} = 'cpan/recent.html';
 
-    Transform( 'cpan/layout-static.html', \%tvars, 'recent.html' );
+    my $text = Transform( 'cpan/layout-static.html', \%tvars );
+    overwrite_file( $cache . '/recent.html', $text );
     $tvars{recent} = undef;
 
     my $destfile = "$cache/recent.rss";

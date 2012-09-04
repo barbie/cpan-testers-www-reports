@@ -30,7 +30,12 @@ function setDisplayedVersion() {
   var rows    = document.createElement('tbody');
   rows.setAttribute('id','report_data');
   var select  = document.getElementById('version');
+  var svalue  = select.value;
   var reports = results[select.value];
+  var header  = distros[svalue][0].header;
+  var modhead = document.getElementById('modulehead');
+  modhead.innerHTML = header;
+
 
   var re_patch = new RegExp('\\bpatch\\b');
   var re_perl  = new RegExp('\\b'+prefs.perlver+'\\b');
