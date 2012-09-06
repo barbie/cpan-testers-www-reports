@@ -1,8 +1,9 @@
 Changes for the CPAN Testers Reports website
 
 3.40    2012-09-06
-	- reports-summary fixes
+	- reports-summary fixes.
 	- distro.js template fix.
+	- addition of reports-monitor.sh script.
 
 3.39    2012-09-04
         - added iheart CSS.

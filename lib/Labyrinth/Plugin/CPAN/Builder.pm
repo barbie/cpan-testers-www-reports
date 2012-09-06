@@ -289,6 +289,7 @@ sub AuthorPages {
             while(my $row = $next->()) {
                 next    if($dists{$row->{dist}} ne $row->{version});    # ensure this is the latest dist version
 
+                $row->{perl} ||= '';
                 $row->{perl} = "5.004_05" if $row->{perl} eq "5.4.4"; # RT 15162
                 $row->{perl} =~ s/patch.*/patch blead/  if $row->{perl} =~ /patch.*blead/;
                 my ($osname) = $cpan->OSName($row->{osname});

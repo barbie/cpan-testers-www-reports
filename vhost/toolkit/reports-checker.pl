@@ -135,14 +135,14 @@ sub check_author_summary {
     my $count = $cpan->{data}{authors}{tote};
 
     for my $row (@{ $cpan->{data}{authors}{list} }) {
-        my @summary = $dbx->GetQuery('hash','GetAuthorSummary',$row->[0]);
+        my @summary = $dbx->GetQuery('hash','GetAuthorSummary',$row->{author});
         if(@summary) {
             my $tvars = decode_json($summary[0]->{dataset});
             next    unless($tvars->{distributions});
 
             my $done = 0;
             for my $dist (@{$tvars->{distributions}}) {
-                if($dist->{version} =~ /-TRIAL/}) {
+                if($dist->{version} =~ /-TRIAL/) {
                     $dist->{cssrelease} = 'dev';
                     $done = 1;
                 }
@@ -151,8 +151,9 @@ sub check_author_summary {
             next    unless($done);
 
             my $dataset = encode_json($tvars);
-            $dbx->DoQuery('UpdateAuthorSummary',$summary[0]->{lastid},$dataset,$summary[0]->{name}) if($options{update});
-            _log("FIXED: $row->[0]")                if($options{verbose});
+            $dbx->DoQuery('UpdateAuthorSummary',$summary[0]->{lastid},$dataset,$summary[0]->{name}) 
+                                            if($options{update});
+            _log("FIXED: $row->{author}")   if($options{verbose});
             $fixed++;
         }
     }

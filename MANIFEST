@@ -448,6 +448,7 @@ vhost/toolkit/reports-builder.pl
 vhost/toolkit/reports-builder.sh
 vhost/toolkit/reports-checker.pl
 vhost/toolkit/reports-monitor.pl
+vhost/toolkit/reports-monitor.sh
 vhost/toolkit/reports-recent.pl
 vhost/toolkit/reports-release.ini
 vhost/toolkit/reports-release.pl

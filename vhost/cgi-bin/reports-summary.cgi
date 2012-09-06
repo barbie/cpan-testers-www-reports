@@ -454,7 +454,6 @@ sub writer {
 
         print $cgi->header;
         print $OT->response();
-        print "\n";
     }
 }
 
