@@ -1,5 +1,9 @@
 Changes for the CPAN Testers Reports website
 
+3.40    2012-09-06
+	- reports-summary fixes
+	- distro.js template fix.
+
 3.39    2012-09-04
         - added iheart CSS.
         - versions with TRIAL now designated dev releases. [RT#77681 - CJM]

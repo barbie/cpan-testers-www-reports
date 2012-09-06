@@ -3,8 +3,8 @@ use strict;
 
 $|++;
 
-my $VERSION = '3.34';
-my $LABYRINTH = '5.00';
+my $VERSION = '3.40';
+my $LABYRINTH = '5.13';
 
 =head1 NAME
 

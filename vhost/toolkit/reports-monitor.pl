@@ -4,7 +4,7 @@ use strict;
 $|++;
 
 use vars qw($VERSION);
-$VERSION = '3.27';
+$VERSION = '3.40';
 
 =head1 NAME
 
@@ -57,9 +57,19 @@ Labyrinth::Globals::DBConnect();
 my $content = Labyrinth::Plugin::Content->new();
 $content->GetVersion();
 
+_log("Start");
+
 my $monitor = Labyrinth::Plugin::CPAN::Monitor->new();
 $monitor->Snapshot(\&_log);
 $monitor->Graphs(\&_log);
+
+_log("Finish");
+
+sub _log {
+    my @date = localtime(time);
+    my $date = sprintf "%04d/%02d/%02d %02d:%02d:%02d", $date[5]+1900, $date[4]+1, $date[3], $date[2], $date[1], $date[0];
+    print "$date " . join(' ',@_ ). "\n";
+}
 
 __END__
 
