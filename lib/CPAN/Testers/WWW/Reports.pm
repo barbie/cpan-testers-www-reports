@@ -3,7 +3,7 @@ package CPAN::Testers::WWW::Reports;
 use warnings;
 use strict;
 
-our $VERSION = '3.39';
+our $VERSION = '3.40';
 
 1;
 
