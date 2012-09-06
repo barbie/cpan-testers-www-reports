@@ -2,7 +2,7 @@
 use strict;
 $|++;
 
-my $VERSION = '3.23';
+my $VERSION = '3.40';
 
 #----------------------------------------------------------------------------
 
@@ -439,9 +439,9 @@ sub writer {
 
     #audit("DEBUG: result=$result");
 
-    if($options{format} == 'xml') {
+    if($options{format} eq 'xml') {
         print $cgi->header('text/xml') . $result . "\n";
-    } elsif($options{format} == 'txt') {
+    } elsif($options{format} eq 'txt') {
         print $cgi->header('text/text') . $result . "\n";
     } else {
         $OT = OpenThought->new();
