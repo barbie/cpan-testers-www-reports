@@ -5,30 +5,30 @@
 
 [% body = PROCESS $content %]
 
-<title>CPAN Testers Reports: [% htmltitle || title | html %]</title>
+  <title>CPAN Testers Reports: [% htmltitle || title | html %]</title>
 
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-<meta name="title"       content="CPAN Testers Reports" />
-<meta name="author"      content="Barbie" />
-<meta name="language"    content="en" />
-<meta name="keywords"    content="perl, cpan, test, testing, tester, testers, reports, smoke, smoker, black box, automated, automation" />
-<meta name="description" content="Report listings of distributions and authors from reports submitted by the CPAN Testers community, who automatically black box test submissions to Perl's CPAN code repository" />
+  <meta http-equiv="Content-Type"         content="text/html; charset=UTF-8" />
+  <meta http-equiv="Content-Language"     content="en-gb" />
+  <meta http-equiv="Content-Style-Type"   content="text/css" />
+  <meta http-equiv="Content-Script-Type"  content="text/javascript" />
 
-<link rel="stylesheet" type="text/css" media="screen,projection,print" href="/css/layout2_setup.css" />
-<link rel="stylesheet" type="text/css" media="screen,projection,print" href="/css/layout2_text.css" />
+  <meta name="Generator"    content="Labyrinth" />
+  <meta name="copyright"    content="Copyright (C) 2007-2013 CPAN Testers" />
+  <meta name="title"        content="CPAN Testers Reports" />
+  <meta name="author"       content="Barbie" />
+  <meta name="language"     content="en" />
+  <meta name="keywords"     content="perl, cpan, test, testing, tester, testers, reports, smoke, smoker, black box, automated, automation" />
+  <meta name="description"  content="Report listings of distributions and authors from reports submitted by the CPAN Testers community, who automatically black box test submissions to Perl's CPAN code repository" />
+
+  <link rel="stylesheet" type="text/css" media="screen,projection,print" href="/css/layout2_setup.css" />
+  <link rel="stylesheet" type="text/css" media="screen,projection,print" href="/css/layout2_text.css" />
 
 [% IF rss %]<link  rel="alternate" type="application/rss+xml" title="CPAN Testers RSS" href="[% rss %]" />[% END %]
 [% IF rss2 %]<link rel="alternate" type="application/rss+xml" title="CPAN Testers RSS - NO PASS" href="[% rss2 %]" />[% END %]
 
+  [% INCLUDE "public/analytics.html" %]
 
-<script type="text/javascript">
-var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
-var pageTracker = _gat._getTracker("UA-1826389-16");
-pageTracker._trackPageview();
-</script>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
 [% IF distribution %]
 	<script type="text/javascript" src="/js/OpenThought.js"></script>
@@ -48,16 +48,16 @@ pageTracker._trackPageview();
 [% END -%]
 
 <!--
-    Site Layout, Design &amp; Development by Miss Barbell Productions
-    Original CSS/XHTML Template Design by Wolfgang.
+  Site Layout, Design &amp; Development by Miss Barbell Productions
+  Original CSS/XHTML Template Design by Wolfgang.
 
-    Valid XHTML 1.0 - http://validator.w3.org/check?uri=referer
-    Powered by LAMP (Linux, Apache, MySQL &amp; Perl) technologies.
-    Produced by LABYRINTH, a state of the art Website Management System
-    available from Miss Barbell Productions.
-    For more information contact Barbie <barbie@missbarbell.co.uk>
+  Valid XHTML 1.0 - http://validator.w3.org/check?uri=referer
+  Powered by LAMP (Linux, Apache, MySQL &amp; Perl) technologies.
+  Produced by LABYRINTH, a state of the art Website Management System
+  available from Miss Barbell Productions.
+  For more information contact Barbie <barbie@missbarbell.co.uk>
 
-    Smoke Box image copyright (c) Tyson Ibele 2004 (http://www.tysonibele.com/Main/gallery.htm)
+  Smoke Box image copyright (c) Tyson Ibele 2004 (http://www.tysonibele.com/Main/gallery.htm)
 -->
 
 </head>
@@ -138,5 +138,9 @@ pageTracker._trackPageview();
 
   </div> 
 
+  <p class="footnote"><a href="http://blog.cpantesters.org/article/terms" title="Terms &amp; Conditions">Terms &amp; Conditions</a></p>
+
+  <script type="text/javascript" src="/js/iheart.js"></script>
+  
 </body>
 </html>
