@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use vars qw($VERSION);
-$VERSION = '3.40';
+$VERSION = '3.41';
 
 =head1 NAME
 
@@ -31,8 +31,8 @@ use Labyrinth::Plugin::Articles::Site;
 
 use Clone   qw(clone);
 use Cwd;
-use File::Slurp;
 use File::Path;
+use File::Slurp;
 use JSON::XS;
 #use Sort::Versions;
 use Time::Local;
@@ -377,7 +377,7 @@ sub DistroPages {
     my $ignore     = $cpan->ignore;
 
     my @delete = ($name);
-    if(   ( $name =~ /^[A-Za-z0-9][A-Za-z0-9\-_+]*$/ && !$ignore->{$name} )
+    if(   ( $name =~ /^[A-Za-z0-9][A-Za-z0-9\-_+.]*$/ && !$ignore->{$name} )
        || ( $exceptions && $name =~ /$exceptions/ ) ) {
 
         # Some distributions are known by multiple names. Rather than create
@@ -877,9 +877,9 @@ sub _versioncmp {
     $v1 =~ s/\s.*$//    if($v1);
     $v2 =~ s/\s.*$//    if($v2);
 
-    return -1   if(!$v1 && $v2);
+    return -1   if(!$v1 &&  $v2);
     return  0   if(!$v1 && !$v2);
-    return  1   if($v1 && !$v2);
+    return  1   if( $v1 && !$v2);
 
     eval { $vn1 = version->parse($v1); };
     if($@) { return $v1 cmp $v2 }
@@ -904,7 +904,7 @@ Miss Barbell Productions, L<http://www.missbarbell.co.uk/>
 
 =head1 COPYRIGHT & LICENSE
 
-  Copyright (C) 2008-2012 Barbie for Miss Barbell Productions
+  Copyright (C) 2008-2013 Barbie for Miss Barbell Productions
   All Rights Reserved.
 
   This module is free software; you can redistribute it and/or
