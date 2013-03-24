@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use vars qw($VERSION);
-$VERSION = '3.40';
+$VERSION = '3.41';
 
 =head1 NAME
 
@@ -23,6 +23,7 @@ use Labyrinth::Variables;
 
 use Labyrinth::Plugin::CPAN;
 
+use Data::Dumper;
 use GD::Graph::lines;
 use GD::Graph::colour qw(:colours :convert);
 use WWW::Mechanize;
@@ -197,7 +198,6 @@ sub _write_image {
     my $max     = _set_max($m);
     my $range   = _set_range(0,$max);
 
-    use Data::Dumper;
     $progress->( "DATA = [".(scalar(@$data))."] ".Dumper($data) )      if(defined $progress);
 
     #my $grey = add_colour(grey => hex2rgb('#eeeeee'));
@@ -254,83 +254,6 @@ sub _write_image {
     binmode $fh;
     print $fh $gd->png;
     $fh->close;
-}
-
-
-
-sub _make_graphsX {
-    my ($days,$data,$suffix,$progress) = @_;
-
-    my $y = 0;
-    my (@name_count,@page_count,@page_weight);
-    my ($max_name_count,$max_page_count,$max_page_weight) = (0,0,0);
-    for my $now (sort keys %$data) {
-        my (@now) = $now =~ /(\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+)/;
-        if($y++ % 4 == 0) {
-            push @{ $name_count[0]  }, $now[3];
-            push @{ $page_count[0]  }, $now[3];
-            push @{ $page_weight[0] }, $now[3];
-            push @{ $name_count[1]  }, $now[4];
-            push @{ $page_count[1]  }, $now[4];
-            push @{ $page_weight[1] }, $now[4];
-        } else {
-            push @{ $name_count[0]  }, '';
-            push @{ $page_count[0]  }, '';
-            push @{ $page_weight[0] }, '';
-            push @{ $name_count[1]  }, '';
-            push @{ $page_count[1]  }, '';
-            push @{ $page_weight[1] }, '';
-        }
-        my $inx = 2;
-        for my $day (sort {$a <=> $b} keys %$days) {
-            if(defined $data->{$now}{$day}) {
-                push @{ $name_count[$inx]  }, $data->{$now}{$day}->{name_count};
-                push @{ $page_count[$inx]  }, $data->{$now}{$day}->{page_count};
-                push @{ $page_weight[$inx] }, $data->{$now}{$day}->{page_weight};
-
-                $max_name_count  = $data->{$now}{$day}->{name_count}  if($max_name_count  < $data->{$now}{$day}->{name_count});
-                $max_page_count  = $data->{$now}{$day}->{page_count}  if($max_page_count  < $data->{$now}{$day}->{page_count});
-                $max_page_weight = $data->{$now}{$day}->{page_weight} if($max_page_weight < $data->{$now}{$day}->{page_weight});
-            } else {
-                push @{ $name_count[$inx]  }, 0;
-                push @{ $page_count[$inx]  }, 0;
-                push @{ $page_weight[$inx] }, 0;
-            }
-            $inx++;
-        }
-    }
-    
-    _write_image($max_name_count, 'Unique Page Requests',$days,\@name_count, "name_count$suffix", $progress);
-    _write_image($max_page_count, 'Total Page Requests', $days,\@page_count, "page_count$suffix", $progress);
-    _write_image($max_page_weight,'Total Page Weight',   $days,\@page_weight,"page_weight$suffix",$progress);
-
-    $progress->( "Update STOP" )     if(defined $progress);
-}
-
-sub _write_imageX {
-    my ($m,$title,$days,$data,$filename,$progress) = @_;
-    #use Data::Dumper;
-    #$progress->( "DATA = [".(scalar(@$data))."] ".Dumper($data) )      if(defined $progress);
-    my $url = _make_graph_url($m,$title,$days,$data);
-    $progress->( "URL = [".(length($url))."] $url" )    if(defined $progress);
-
-    eval { $mech->get($url); };
-
-    if($@ || !$mech->success()) {
-        my $file = "$settings{webdir}/static/$filename.html";
-        warn("FAIL: $0 - Cannot access page - see '$file'\n");
-        $mech->save_content($file);
-    } elsif($mech->response->header('Content-Type') =~ /html/) {
-        my $file = "$settings{webdir}/static/$filename.html";
-        warn("FAIL: $0 - request failed - see '$file'\n");
-        $mech->save_content($file);
-    } else {
-        my $file = "$settings{webdir}/static/$filename.png";
-        my $fh = IO::File->new(">$file") or die "$0 - Cannot write file [$file]: $!\n";
-        binmode($fh);
-        print $fh $mech->content;
-        $fh->close;
-    }
 }
 
 sub _make_graph_url {
@@ -451,7 +374,7 @@ Miss Barbell Productions, L<http://www.missbarbell.co.uk/>
 
 =head1 COPYRIGHT & LICENSE
 
-  Copyright (C) 2008-2012 Barbie for Miss Barbell Productions
+  Copyright (C) 2008-2013 Barbie for Miss Barbell Productions
   All Rights Reserved.
 
   This module is free software; you can redistribute it and/or
