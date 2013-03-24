@@ -1,4 +1,6 @@
 Changes
+examples/example.txt
+examples/pages.cgi
 lib/CPAN/Testers/WWW/Reports.pm
 lib/Labyrinth/Plugin/CPAN.pm
 lib/Labyrinth/Plugin/CPAN/Authors.pm
@@ -8,6 +10,7 @@ lib/Labyrinth/Plugin/CPAN/Monitor.pm
 lib/Labyrinth/Plugin/CPAN/Release.pm
 lib/Labyrinth/Plugin/CPAN/Report.pm
 lib/Labyrinth/Plugin/Metabase/Parser.pm
+LICENSE
 Makefile.PL
 MANIFEST
 META.json
@@ -89,6 +92,9 @@ vhost/cgi-bin/templates/links/link_list.html
 vhost/cgi-bin/templates/mailer/forgot.eml
 vhost/cgi-bin/templates/menus/menu_adminedit.html
 vhost/cgi-bin/templates/menus/menu_adminlist.html
+vhost/cgi-bin/templates/public/analytics.html
+vhost/cgi-bin/templates/public/analytics-23.html
+vhost/cgi-bin/templates/public/analytics-24.html
 vhost/cgi-bin/templates/public/badaccess.html
 vhost/cgi-bin/templates/public/badcommand.html
 vhost/cgi-bin/templates/public/badlayout.html
@@ -200,6 +206,7 @@ vhost/html/js/admin.js
 vhost/html/js/cpan-testers-author.js
 vhost/html/js/cpan-testers-dist.js
 vhost/html/js/cssrules.js
+vhost/html/js/iheart.js
 vhost/html/js/OpenThought.js
 vhost/html/js/tiny_mce/langs/en.js
 vhost/html/js/tiny_mce/license.txt
