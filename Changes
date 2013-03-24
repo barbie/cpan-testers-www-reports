@@ -1,5 +1,6 @@
 Changes for the CPAN Testers Reports website
 
+3.41    2013-03-24
         - fixed prerequisites.
         - removed redundant code.
         - added LICENSE.
