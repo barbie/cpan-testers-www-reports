@@ -153,7 +153,7 @@ sub retrieve_report {
 }
 
 sub print_report {
-    $tvars{content} = 'cpan/report-view.html';
+    $tvars{content}     = 'cpan/report-view.html';
     $tvars{siteversion} = $VERSION;
     $tvars{labversion}  = $Labyrinth::VERSION;
     Publish();
