@@ -109,7 +109,10 @@ sub BasePages {
 }
 
 sub Process {
-    my ($self,$progress) = @_;
+    my ($self,$progress,$type) = @_;
+
+    # check whether we are running split or combined queries
+    my $types = $type ? "'$type'" : "'author','distro'";
 
     my $cpan = Labyrinth::Plugin::CPAN->new();
     $cpan->Configure();
@@ -117,7 +120,7 @@ sub Process {
     my $olderhit = 0;
     my $quickhit = 1;
     while(1) {
-        my $cnt = IndexPages($cpan,$dbi,$progress);
+        my $cnt = IndexPages($cpan,$dbi,$progress,$type);
         
         # shouldn't really hard code these :)
         my ($query,$loop,$limit) = ('GetRequests',10,10);
@@ -127,7 +130,7 @@ sub Process {
 
         my %names;
         for(1..$loop) {
-            my @rows = $dbi->GetQuery('hash',$query,{limit=>$limit});
+            my @rows = $dbi->GetQuery('hash',$query,{types => $types, limit => $limit});
             last    unless(@rows);
 
             for my $row (@rows) {
@@ -174,9 +177,14 @@ sub Process {
 }
 
 sub IndexPages {
-    my ($cpan,$dbi,$progress) = @_;
+    my ($cpan,$dbi,$progress,$type) = @_;
 
-    my @index = $dbi->GetQuery('hash','GetIndexRequests');
+    # check whether we are running split or combined queries
+    my $types = "'ixauth','ixdist'";
+    $types = "'ixauth'" if($type && $type eq 'author');
+    $types = "'ixdist'" if($type && $type eq 'distro');
+
+    my @index = $dbi->GetQuery('hash','GetIndexRequests',{types => $types});
     for my $index (@index) {
         my ($type,@list);
 
