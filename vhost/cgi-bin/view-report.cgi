@@ -2,7 +2,7 @@
 use strict;
 $|++;
 
-my $VERSION = '3.41';
+my $VERSION = '3.42';
 
 #----------------------------------------------------------------------------
 
@@ -342,6 +342,6 @@ F<http://stats.cpantesters.org/>
   Copyright (C) 2008-2013 Barbie <barbie@cpan.org>
 
   This module is free software; you can redistribute it and/or
-  modify it under the same terms as Perl itself.
+  modify it under the Artistic License 2.0.
 
 =cut

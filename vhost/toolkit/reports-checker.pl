@@ -3,7 +3,7 @@ use strict;
 
 $|++;
 
-my $VERSION = '3.40';
+my $VERSION = '3.42';
 my $LABYRINTH = '5.13';
 
 =head1 NAME
@@ -84,7 +84,7 @@ if(!GetOptions( \%options, 'update|u', 'verbose|v')) {
 
     prep_hashes($cpan,$dbx);
 
-    check_author_summary($cpan,$dbx);
+#    check_author_summary($cpan,$dbx);
 #    check_distro_summary($cpan,$dbx);
 
 #    check_author_static($cpan,$dbx);
@@ -94,10 +94,10 @@ if(!GetOptions( \%options, 'update|u', 'verbose|v')) {
 #    check_distro_rss($cpan,$dbx);
 
 #    check_author_lower($cpan,$dbx);
-#    check_distro_lower($cpan,$dbx);
+    check_distro_lower($cpan,$dbx);
 
-    check_author_json($cpan,$dbx);
-    check_distro_json($cpan,$dbx);
+#    check_author_json($cpan,$dbx);
+#    check_distro_json($cpan,$dbx);
 
     _log("Finish");
 }
@@ -413,11 +413,13 @@ sub check_author_lower {
 
 sub check_distro_lower {
     my ($cpan,$dbx) = @_;
-    my ($ok,$errors,$moved,$removed) = (0,0,0,0);
+    my ($ok,$errors) = (0,0);
 
-    my %lower = %{ $cpan->{data}{distros}{case} };
+    #my %lower = %{ $cpan->{data}{distros}{case} };
     my %names = %{ $cpan->{data}{distros}{hash} };
-    my $count =    $cpan->{data}{distros}{tote};
+    #my $count =    $cpan->{data}{distros}{tote};
+
+    my $count = 0;
 
     #use Data::Dumper;
     #_log("DEBUG: names=".Dumper(\%names)) if($options{verbose});
@@ -427,95 +429,55 @@ sub check_distro_lower {
     my $files = scalar(@files);
 
     for my $file (sort @files) {
-        my ($name) = $file =~ m!/([^/]+)\.json$!;
+        $count++;
 
-        # file names correct
-        if($names{$name}) {
-            $names{$name} = 2;
-            $ok++;
-            next;
+        my ($name1) = $file =~ m!/([^/]+)\.json$!;
+        my $name2 = $name1;
+
+        if($names{$name1}) {
+            $name2 = $names{$name1}; # map to correct name
         }
 
-        my $fixed = $lower{lc $name};
+        my @rows = $dbx->GetQuery('hash','GetUploadByName',$name2);
+        for my $row (@rows) {
+            if($row->{dist} eq $name2) {
+                $match = $name2;
+                last;
+            }
 
-        unless($fixed) {
-            _log("WARNING: UNKNOWN Distro file [$name] [$file]") if($options{verbose});
+            next if($match);
+
+            if(lc $row->{dist} eq lc $name2) {
+                $match = $row->{dist};
+                next;
+            }
+        }
+
+        unless($match) {
+            _log("WARNING: UNKNOWN Distro file [$name1,$name2] [$file]") if($options{verbose});
             $errors++;
             next;
         }
 
-        my $old = sprintf "$DISTROS/%s/%s", substr($name, 0,1), $name;
-        my $new = sprintf "$DISTROS/%s/%s", substr($fixed,0,1), $fixed;
+        $ok++;
+
+        my $old = sprintf "$DISTROS/%s/%s", substr($name1,0,1), $name1;
+        my $new = sprintf "$DISTROS/%s/%s", substr($match,0,1), $match;
+
+        # remove old files
+        for my $ext (qw(json js html)) {
+            unlink("$old.$ext") if($options{update};
+        }
 
         # file name mispelt, no correct version
-        if($names{ $fixed } && ! -f "$new.json") {
-            my $error = 0;
-            my @cmds;
-            for my $ext (qw(json rss yaml js html)) {
-                my $old_file = "$old.$ext";
-                my $new_file = "$new.$ext";
-                if(-f $new_file) {
-                    _log("WARNING: '$new' exists [mv $old_file $new_file]")             if($options{verbose});
-                    $error++;
-                } elsif(! -f $old_file && $ext ne 'rss') {
-                    _log("WARNING: '$old_file' doesn't exist [mv $old_file $new_file]") if($options{verbose});
-                    $error++;
-                } elsif(! -f $old_file && $ext eq 'rss') {
-                    next;
-                } else {
-                    push @cmds, "mv $old_file $new_file";
-                }
-            }
-
-            if($error == 0) {
-                for(@cmds) {
-                    _log("COMMAND: $_") if($options{verbose});
-                    system($_)          if($options{update});
-                }
-                $moved++;
-            } else {
-                $errors++;
-            }
-
-        # file name mispelt, correct version exists
-        } elsif($names{ $fixed } && -f "$new.json") {
-            my $fixed = $lower{lc $name};
-            my $error = 0;
-            my @cmds;
-            for my $ext (qw(json rss yaml js html)) {
-                my $old_file = "$old.$ext";
-                my $new_file = "$new.$ext";
-                if(! -f $new_file) {
-                    _log("WARNING: '$new_file' doesn't exist [rm $old_file]")   if($options{verbose});
-                    $error++;
-                } elsif(! -f $old_file && $ext ne 'rss') {
-                    _log("WARNING: '$old_file' doesn't exist [rm $old_file]")   if($options{verbose});
-                    $error++;
-                } elsif(! -f $old_file && $ext eq 'rss') {
-                    next;
-                } else {
-                    push @cmds, "rm $old_file";
-                }
-            }
- 
-            if($error == 0) {
-                for(@cmds) {
-                    _log("COMMAND: $_") if($options{verbose});
-                    system($_)          if($options{update});
-                }
-                $removed++;
-            } else {
-                $errors++;
-            }
-        } else {
-            _log("WARNING: UNKNOWN Distro file [$name] [$old] [$new] [$fixed] [".($names{ $fixed } || 0)."]") if($options{verbose});
-            $errors++;
+        if(-f "$new.json") {
+            unlink("$new.json") if($options{update};
         }
+
+        $dbx->DoQuery('PushDistro',$name)   if($options{update});
     }
 
-    my $missing = scalar( grep {$names{$_} == 1} keys %names );
-
-    _log("Distro Lower: count=$count, files=$files, missing=$missing, moved=$moved, removed=$removed, errors=$errors, ok=$ok");
+    _log("Distro Lower: count=$count, errors=$errors, ok=$ok");
 }
 
 sub check_author_json {
@@ -620,13 +582,11 @@ __END__
 
 =head1 AUTHOR
 
-  Copyright (c) 2009-2010 Barbie <barbie@cpan.org> Miss Barbell Productions.
+  Copyright (c) 2009-2013 Barbie <barbie@cpan.org> Miss Barbell Productions.
 
 =head1 LICENSE
 
-  This program is free software; you can redistribute it and/or modify it
-  under the same terms as Perl itself.
-
-  See http://www.perl.com/perl/misc/Artistic.html
+  This module is free software; you can redistribute it and/or
+  modify it under the Artistic License 2.0.
 
 =cut
