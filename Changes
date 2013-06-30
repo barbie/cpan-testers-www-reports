@@ -1,5 +1,6 @@
 Changes for the CPAN Testers Reports website
 
+3.42    2013-06-30
         - minor displayed version fixes.
         - added new buildlevel to ensure overdue popular distributions are built 
           sooner rather than later.
