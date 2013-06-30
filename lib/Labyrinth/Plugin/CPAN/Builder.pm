@@ -304,6 +304,7 @@ sub AuthorPages {
             }
 
             while(my $row = $next->()) {
+                next    unless($dists{$row->{dist}} && $row->{version});
                 next    if($dists{$row->{dist}} ne $row->{version});    # ensure this is the latest dist version
 
                 $row->{perl} ||= '';

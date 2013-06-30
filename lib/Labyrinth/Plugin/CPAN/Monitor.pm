@@ -198,7 +198,7 @@ sub _write_image {
     my $max     = _set_max($m);
     my $range   = _set_range(0,$max);
 
-    $progress->( "DATA = [".(scalar(@$data))."] ".Dumper($data) )      if(defined $progress);
+    #$progress->( "DATA = [".(scalar(@$data))."] ".Dumper($data) )      if(defined $progress);
 
     #my $grey = add_colour(grey => hex2rgb('#eeeeee'));
     my $graph = GD::Graph::lines->new(640, 300);

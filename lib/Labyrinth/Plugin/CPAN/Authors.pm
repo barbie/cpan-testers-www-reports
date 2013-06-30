@@ -108,10 +108,10 @@ sub Reports {
     # get author summary
     my @summary = $dbi->GetQuery('hash','GetAuthorSummary',$cgiparams{name});
     unless(@summary) {
-        unless($settings{crawler}) {
+        #unless($settings{crawler}) {
             $dbi->DoQuery('PushAuthor',$cgiparams{name});
             $tvars{update} = 1;
-        }
+        #}
         $tvars{perlvers}    = $cpan->mklist_perls;
         $tvars{osnames}     = $cpan->osnames;
         return;
@@ -120,10 +120,10 @@ sub Reports {
     # if existing page requests, add another to improve rebuild time
     @rows = $dbi->GetQuery('array','GetAuthorRequests',$cgiparams{name});
     if(@rows && $rows[0]->[0] > 0) {
-        unless($settings{crawler}) {
+        #unless($settings{crawler}) {
             $dbi->DoQuery('PushAuthor',$cgiparams{name});
             $tvars{update} = 1;
-        }
+        #}
     }
 
     # decode from JSON string
