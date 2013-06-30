@@ -4,6 +4,8 @@ Changes for the CPAN Testers Reports website
         - added new buildlevel to ensure overdue popular distributions are built 
           sooner rather than later.
         - allow build queries to be author or distro centric, or combined.
+        - report serialisation switched to Data::FlexSerializer to compress 
+          storage.
 
 3.41    2013-03-24
         - fixed prerequisites.

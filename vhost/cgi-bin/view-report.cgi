@@ -38,6 +38,7 @@ use Labyrinth::Plugin::CPAN;
 use CGI;
 use Config::IniFiles;
 use Data::Dumper;
+use Data::FlexSerializer;
 use IO::File;
 use JSON;
 use MIME::QuotedPrint;
@@ -56,7 +57,7 @@ my $DEBUG = 0;
 my $LONG_ALLOWED = 0;
 
 my $VHOST = '/var/www/reports/';
-my (%options);
+my (%options,$serializer);
 
 my $EXCEPTIONS;
 my %SYMLINKS;
@@ -76,6 +77,10 @@ sub init_options {
 
     error("Must specific the configuration file\n")             unless($options{config});
     error("Configuration file [$options{config}] not found\n")  unless(-f $options{config});
+
+    $serializer = Data::FlexSerializer->new(
+        detect_compression => 1,
+    );
 
     # load configuration
     Labyrinth::Variables::init();   # initial standard variable values
@@ -231,7 +236,9 @@ sub _parse_guid_report {
     my @rows = $dbi->GetQuery('hash','GetMetabaseByGUID',$cgiparams{id});
     return  unless(@rows);
 
-    my $data = decode_json($rows[0]->{report});
+    my $data = $serializer->deserialize($rows[0]->{report});
+    #my $data = decode_json($rows[0]->{report});
+
     my $fact = CPAN::Testers::Fact::LegacyReport->from_struct( $data->{'CPAN::Testers::Fact::LegacyReport'} );
     $tvars{article}{article}    = SafeHTML($fact->{content}{textreport});
     #$tvars{article}{id}         = $rows[0]->{id};

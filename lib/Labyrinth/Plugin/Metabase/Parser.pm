@@ -25,6 +25,12 @@ use Labyrinth::Variables;
 use Labyrinth::Writer;
 
 use CPAN::Testers::Common::Article;
+use Data::FlexSerializer;
+
+#----------------------------------------------------------------------------
+# Variables
+
+my $serializer = Data::FlexSerializer->new( detect_compression => 1 );
 
 #----------------------------------------------------------------------------
 # Public Interface Functions
@@ -105,16 +111,12 @@ sub _parse_nntp_report {
 }
 
 sub _parse_guid_report {
-    my @rows = $dbi->GetQuery('hash','GetMetabaseReport',$cgiparams{id});
+    my @rows = $dbi->GetQuery('hash','GetMetabaseByGUID',$cgiparams{id});
     return  unless(@rows);
 
-    $tvars{article}{meta} = $rows[0]->{meta};
-    $tvars{article}{data} = JSON::XS->new->decode($rows[0]->{meta});
+    $tvars{article}{data} = $serializer->deserialize($rows[0]->{report});
 
-    my $object = Labyrinth::Plugin::Metabase::Parser->new($rows[0]->{meta});
-
-    $tvars{article}{meta}    = $rows[0]->{meta};
-    $tvars{article}{data}    = $object->data;
+    my $object = Labyrinth::Plugin::Metabase::Parser->new($tvars{article}{data});
 
     $tvars{article}{subject} = $object->subject;
     $tvars{article}{from}    = $object->from;
