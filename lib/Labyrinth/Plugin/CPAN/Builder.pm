@@ -153,17 +153,17 @@ sub Process {
         last         if($cnt == 0 || $req == 0);
 
         my $age = _request_oldest($dbi);
-        my @row = $dbi->GetQuery('hash','GetLargeRequests',{limit=>1});
+        my @row = $dbi->GetQuery('hash','GetLargeRequests',{types => $types, limit => 1});
         my $sum = $row[0]->{total};
         my $num = $row[0]->{count};
 
         $quickhit =
-            $age > $settings{agelimit1}                             # requests older than x days take priority
-                ? 1
-                : $num > $settings{buildlevel4}                     # very high num of requests for one request type
+            $sum > $settings{buildlevel4}                           # very high sum of requests for one request type
+                ? 5
+                : $num > $settings{buildlevel5}                     # very high num of requests for one request type
                     ? 5
-                    : $sum > $settings{buildlevel4}                 # very high sum of requests for one request type
-                        ? 5
+                    : $age > $settings{agelimit1}                   # requests older than x days take priority
+                        ? 1
                         : $req < $settings{buildlevel1}             # low amount of requests
                             ? 1
                             : $req < $settings{buildlevel2}         # medium level of requests
@@ -236,6 +236,8 @@ sub IndexPages {
 sub AuthorPages {
     my ($cpan,$dbi,$name,$progress) = @_;
     return  unless(defined $name);
+
+    $name = uc $name;
 
     my @ids = (0);
     my %vars = %{ clone (\%tvars) };
@@ -636,7 +638,7 @@ sub StatsPages {
     while ( my $row = $next->() ) {
         #next if not $row->{perl};
         #next if $row->{perl} =~ / /;
-        #next if $row->{perl} =~ /^5\.(7|9|11)/; # ignore dev versions
+        #next if $row->{perl} =~ /^5\.(7|9|[1-9][13579])\b/; # ignore dev versions
         #next if $row->{version} =~ /[^\d.]/;
 
         $row->{perl} = "5.004_05" if $row->{perl} eq "5.4.4"; # RT 15162
