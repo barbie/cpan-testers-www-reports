@@ -2,7 +2,7 @@
 use strict;
 $|++;
 
-my $VERSION = '3.42';
+my $VERSION = '3.43';
 
 #----------------------------------------------------------------------------
 
@@ -35,6 +35,8 @@ use Labyrinth::Writer;
 
 use Labyrinth::Plugin::CPAN;
 
+#use CGI::Carp			qw(fatalsToBrowser);
+
 use CGI;
 use Config::IniFiles;
 use Data::Dumper;
@@ -57,7 +59,7 @@ my $DEBUG = 0;
 my $LONG_ALLOWED = 0;
 
 my $VHOST = '/var/www/reports/';
-my (%options,$serializer);
+my (%options,$serializer,$logfile);
 
 my $EXCEPTIONS;
 my %SYMLINKS;
@@ -86,7 +88,9 @@ sub init_options {
     Labyrinth::Variables::init();   # initial standard variable values
     LoadSettings($options{config});            # Load All Global Settings
 
-    SetLogFile( FILE   => $settings{'logfile'} . '.reports',
+    $logfile = $settings{'logfile'} . '.reports';
+
+    SetLogFile( FILE   => $logfile,
                 USER   => 'labyrinth',
                 LEVEL  => ($settings{'loglevel'} || 0),
                 CLEAR  => 1,
@@ -233,18 +237,34 @@ sub _parse_guid_report {
     my $cpan = Labyrinth::Plugin::CPAN->new();
     $cpan->Configure();
 
+LogDebug("parse guid report: $cgiparams{id}");
+
     my @rows = $dbi->GetQuery('hash','GetMetabaseByGUID',$cgiparams{id});
     return  unless(@rows);
 
     my $data = $serializer->deserialize($rows[0]->{report});
     #my $data = decode_json($rows[0]->{report});
 
-    my $fact = CPAN::Testers::Fact::LegacyReport->from_struct( $data->{'CPAN::Testers::Fact::LegacyReport'} );
+LogDebug("data: ".Dumper($data));
+
+    my $fact;
+    eval { $fact = CPAN::Testers::Fact::LegacyReport->from_struct( $data->{'CPAN::Testers::Fact::LegacyReport'} ) };
+    if($@ && !$fact) {
+        error('LegacyReport',$@);
+        return;
+    }
+
     $tvars{article}{article}    = SafeHTML($fact->{content}{textreport});
     #$tvars{article}{id}         = $rows[0]->{id};
     $tvars{article}{guid}       = $rows[0]->{guid};
 
-    my $report = CPAN::Testers::Fact::TestSummary->from_struct( $data->{'CPAN::Testers::Fact::TestSummary'} );
+    my $report;
+    eval { $report = CPAN::Testers::Fact::TestSummary->from_struct( $data->{'CPAN::Testers::Fact::TestSummary'} ) };
+    if($@ && !$report) {
+        error('TestSummary',$@);
+        return;
+    }
+
     my ($osname) = $cpan->OSName($report->{content}{osname});
 
     $tvars{article}{state}      = lc $report->{content}{grade};
@@ -293,21 +313,10 @@ sub get_tester {
 }
 
 sub error {
-    audit('ERROR:',@_);
+    LogError('ERROR:',@_);
     print STDERR @_;
     print $cgi->header('text/plain'), "Error retrieving data\n";
     exit;
-}
-
-sub audit {
-    return  unless($DEBUG);
-
-    my @date = localtime(time);
-    my $date = sprintf "%04d/%02d/%02d %02d:%02d:%02d", $date[5]+1900, $date[4]+1, $date[3], $date[2], $date[1], $date[0];
-
-    my $fh = IO::File->new($VHOST . 'cgi-bin/cache/summary-audit.log','a+') or return;
-    print $fh "$date " . join(' ',@_ ). "\n";
-    $fh->close;
 }
 
 1;
@@ -323,15 +332,18 @@ documentation, please send bug reports and patches to the RT Queue (see below).
 Fixes are dependant upon their severity and my availablity. Should a fix not
 be forthcoming, please feel free to (politely) remind me.
 
-RT: http://rt.cpan.org/Public/Dist/Display.html?Name=CPAN-WWW-Testers
+RT: http://rt.cpan.org/Public/Dist/Display.html?Name=CPAN-Testers=WWW-Reports
 
 =head1 SEE ALSO
 
-L<CPAN::WWW::Testers::Generator>
-L<CPAN::Testers::WWW::Statistics>
+L<CPAN::Testers::WWW::Statistics>,
+L<CPAN::Testers::WWW::Wiki>,
+L<CPAN::Testers::WWW::Blog>
 
 F<http://www.cpantesters.org/>,
-F<http://stats.cpantesters.org/>
+F<http://stats.cpantesters.org/>,
+F<http://wiki.cpantesters.org/>,
+F<http://blog.cpantesters.org/>
 
 =head1 AUTHOR
 
