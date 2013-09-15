@@ -1,5 +1,9 @@
 Changes for the CPAN Testers Reports website
 
+3.43    2013-07-10
+        - added compress-reports.pl to start compressing reports in the 
+          metabase table.
+
 3.42    2013-06-30
         - minor displayed version fixes.
         - added new buildlevel to ensure overdue popular distributions are built 
