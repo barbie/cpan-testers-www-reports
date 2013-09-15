@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use vars qw($VERSION);
-$VERSION = '3.42';
+$VERSION = '3.43';
 
 =head1 NAME
 
@@ -29,8 +29,7 @@ use Sort::Versions;
 #----------------------------------------------------------------------------
 # Variables
 
-my %DBX;    # singleton
-my %TESTER;
+my (%DBX,%TESTER,%TESTERS);
 
 #----------------------------------------------------------------------------
 # Public Interface Functions

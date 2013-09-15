@@ -2,7 +2,7 @@
 use strict;
 $|++;
 
-my $VERSION = '3.42';
+my $VERSION = '3.43';
 
 #----------------------------------------------------------------------------
 
@@ -488,15 +488,18 @@ documentation, please send bug reports and patches to the RT Queue (see below).
 Fixes are dependant upon their severity and my availablity. Should a fix not
 be forthcoming, please feel free to (politely) remind me.
 
-RT: http://rt.cpan.org/Public/Dist/Display.html?Name=CPAN-WWW-Testers
+RT: http://rt.cpan.org/Public/Dist/Display.html?Name=CPAN-Testers=WWW-Reports
 
 =head1 SEE ALSO
 
-L<CPAN::WWW::Testers::Generator>
-L<CPAN::Testers::WWW::Statistics>
+L<CPAN::Testers::WWW::Statistics>,
+L<CPAN::Testers::WWW::Wiki>,
+L<CPAN::Testers::WWW::Blog>
 
 F<http://www.cpantesters.org/>,
-F<http://stats.cpantesters.org/>
+F<http://stats.cpantesters.org/>,
+F<http://wiki.cpantesters.org/>,
+F<http://blog.cpantesters.org/>
 
 =head1 AUTHOR
 

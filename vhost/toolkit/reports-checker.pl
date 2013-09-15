@@ -3,7 +3,7 @@ use strict;
 
 $|++;
 
-my $VERSION = '3.42';
+my $VERSION = '3.43';
 my $LABYRINTH = '5.13';
 
 =head1 NAME
