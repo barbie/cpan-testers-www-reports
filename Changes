@@ -1,5 +1,7 @@
 Changes for the CPAN Testers Reports website
 
+        - added missing prereq in makefile.PL
+
 3.43    2013-07-10
         - added compress-reports.pl to start compressing reports in the 
           metabase table.

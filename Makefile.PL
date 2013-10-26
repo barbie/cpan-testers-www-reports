@@ -23,6 +23,7 @@ WriteMakefile(
         'CPAN::Testers::Fact::TestSummary'  => '0',
         'Cwd'                               => '0',
         'Data::Dumper'                      => '0',
+        'Data::FlexSerializer'              => '0',
         'Email::Address'                    => '0',
         'File::Path'                        => '0',
         'File::Slurp'                       => '0',
