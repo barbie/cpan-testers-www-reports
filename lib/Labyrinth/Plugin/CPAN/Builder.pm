@@ -121,7 +121,8 @@ sub Process {
     my $quickhit = 1;
     while(1) {
         my $cnt = IndexPages($cpan,$dbi,$progress,$type);
-        
+        $cnt += RemovePages($cpan,$dbi,$progress,$type);
+
         # shouldn't really hard code these :)
         my ($query,$loop,$limit) = ('GetRequests',10,10);
         ($query,$loop,$limit) = ('GetOlderRequests',1,100)  if($quickhit == 1);
@@ -229,6 +230,175 @@ sub IndexPages {
     return scalar(@index);
 }
 
+sub RemovePages {
+    my ($cpan,$dbi,$progress,$type) = @_;
+
+    # check whether we are running split or combined queries
+    my $types = "'rmauth','rmdist'";
+    $types = "'rmauth'" if($type && $type eq 'author');
+    $types = "'rmdist'" if($type && $type eq 'distro');
+
+    my @rows = $dbi->GetQuery('hash',GetRequests,{types => $types, limit => 20});
+    return 0    unless(@rows);
+
+    my @index = $dbi->GetQuery('hash','GetIndexRequests',{types => $types});
+    for my $index (@index) {
+        my ($type,@list);
+
+        $progress->( ".. processing $index->{type} $index->{name}" )     if(defined $progress);
+
+        if($index->{type} eq 'rmauth') {
+            RemoveAuthorPages($cpan,$dbi,$progress,$index->{name});
+        } else {
+            RemoveDistroPages($cpan,$dbi,$progress,$index->{name});
+        }
+    }
+}
+
+sub RemoveAuthorPages {
+    my ($cpan,$dbi,$progress,$name) = @_;
+
+    # get ids from the page requests
+    my @requests = $dbi->GetQuery('hash','GetRequestIDs',{names => $name},'rmauth');
+    my %requests = map { $_->{id} => 1 } grep { $_->{id} } @requests;
+
+    return  unless(keys %requests);
+    push my @ids, keys %requests;
+
+    # map current
+    my @dists = $dbi->GetQuery('hash','GetAuthorDists',$name);
+    return  unless(@dists);
+    my %dists = map {$_->{dist} => $_->{version}} @dists;
+
+    my $cache = sprintf "%s/static/author/%s", $settings{webdir}, substr($name,0,1);
+    my $destfile = "$cache/$name.json";
+
+    # get reports
+    my %remove;
+    my $next = $dbi->Iterator('hash','GetReportsByIDs',{ids=>join(',',@ids)});
+    while(my $row = $next->()) {
+        next    unless($dists{$row->{dist}} && $row->{version});
+        next    if($dists{$row->{dist}} ne $row->{version});    # ensure this is the latest dist version
+
+        # hash of dist => summary => PASS, FAIL, NA, UNKNOWN
+        $remove{$row->{dist}}{uc $row->{state}}++;
+    }
+
+    # clean the summary, if we have one
+    my @summary = $dbi->GetQuery('hash','GetAuthorSummary',$name);
+    if(@summary) {
+        my $dataset = decode_json($summary[0]->{dataset});
+
+        for my $data ( @{ $dataset->{distributions} } ) {
+            my $dist = $data->{dist};
+            my $summ = $data->{summary};
+
+            next    unless($remove{$dist});
+
+            for my $state (keys %{ $remove{$dist} }) {
+                $summ->{ $state } -= $remove{$dist}{$state};
+                $summ->{ 'ALL'  } -= $remove{$dist}{$state};
+            }
+        }
+
+        $dbi->DoQuery('UpdateAuthorSummary',$summary[0]->{lastid},$dataset,$name);
+    }
+
+    # load JSON, if we have one
+    if(-f $destfile) {
+        my $data  = read_file($destfile);
+        my $store;
+        eval { $store = decode_json($data) };
+        if(!$@ && $store) {
+            for my $row (@$store) {
+                next    if($dists{$row->{dist}} ne $row->{version});    # ensure this is the latest dist version
+                next    if($requests{$row->{id}});                      # filter out requests
+
+                push @reports, $row;
+            }
+        }
+        overwrite_file( $destfile, _make_json( \@reports ) );
+    }
+
+    # remove requests
+    $dbi->DoQuery('DeletePageRequests',{ids => join(',',@ids)},'rmauth',$name);
+
+    # push in author queue to rebuild pages
+    $dbi->DoQuery('PushAuthor',$name);
+}
+
+sub RemoveDistroPages {
+    my ($cpan,$dbi,$progress,$name) = @_;
+
+    # get ids from the page requests
+    my @requests = $dbi->GetQuery('hash','GetRequestIDs',{names => $name},'rmdist');
+    my %requests = map { $_->{id} => 1 } grep { $_->{id} } @requests;
+
+    return  unless(keys %requests);
+    push my @ids, keys %requests;
+
+    my $exceptions = $cpan->exceptions;
+    my $symlinks   = $cpan->symlinks;
+    my $merged     = $cpan->merged;
+    my $ignore     = $cpan->ignore;
+
+    my @delete = ($name);
+    if(   ( $name =~ /^[A-Za-z0-9][A-Za-z0-9\-_+.]*$/ && !$ignore->{$name} )
+       || ( $exceptions && $name =~ /$exceptions/ ) ) {
+
+        # Some distributions are known by multiple names. Rather than create
+        # pages for each one, we try and merge them together into one.
+
+        my $dist;
+        if($symlinks->{$name}) {
+            $name = $symlinks->{$name};
+            $dist = join("','", @{$merged->{$name}});
+            @delete = @{$merged->{$name}};
+        } elsif($merged->{$name}) {
+            $dist = join("','", @{$merged->{$name}});
+            @delete = @{$merged->{$name}};
+        } else {
+            $dist = $name;
+            @delete = ($name);
+        }
+
+        my @valid = $dbi->GetQuery('hash','FindDistro',{dist=>$dist});
+        return  unless(@valid);
+
+        my $cache = sprintf "%s/static/distro/%s", $settings{webdir}, substr($name,0,1);
+        my $destfile = "$cache/$name.json";
+
+        # get reports
+        my %remove;
+        my $next = $dbi->Iterator('hash','GetReportsByIDs',{ids=>join(',',@ids)});
+        while(my $row = $next->()) {
+            # hash of dist => summary => PASS, FAIL, NA, UNKNOWN
+            $remove{$row->{dist}}{$row->{version}}{uc $row->{state}}++;
+        }
+
+        # load JSON, if we have one
+        if(-f $destfile) {
+            my $data  = read_file($destfile);
+            my $store;
+            eval { $store = decode_json($data) };
+            if(!$@ && $store) {
+                for my $row (@$store) {
+                    next    if($requests{$row->{id}});                      # filter out requests
+
+                    push @reports, $row;
+                }
+            }
+            overwrite_file( $destfile, _make_json( \@reports ) );
+        }
+    }
+
+    # remove requests
+    $dbi->DoQuery('DeletePageRequests',{ids => join(',',@ids)},'rmdist',$name);
+
+    # push in author queue to rebuild pages
+    $dbi->DoQuery('PushDistro',$name);
+}
+
 # - build author pages
 # - update summary
 # - remove page request entries
@@ -280,7 +450,7 @@ sub AuthorPages {
                         push @reports, $row;
                     }
 
-                    $fromid = " AND id > $lastid "  if($lastid); 
+                    $fromid = " AND id > $lastid "  if($lastid);
                 }
             }
 
@@ -349,7 +519,7 @@ sub AuthorPages {
                 else            { $dbi->DoQuery('InsertAuthorSummary',$lastid,$dataset,$name); }
             }
 
-            # we have to do this here as we don't want all the reports in 
+            # we have to do this here as we don't want all the reports in
             # the encoded summary, just whether we have reports or not
             for my $dist (@dists) {
                 $dist->{reports}    = $reports{$dist->{dist}};
@@ -435,7 +605,7 @@ sub DistroPages {
             my $cache = sprintf "%s/static/distro/%s", $settings{webdir}, substr($name,0,1);
             my $destfile = "$cache/$name.json";
             mkpath($cache);
- 
+
             # load JSON data if available
             if(-f $destfile && $lastid) {
                 my $json = read_file($destfile);
@@ -458,7 +628,7 @@ sub DistroPages {
                         unshift @{ $reports{$row->{version}} }, $row    if(defined $reports{$row->{version}});
                     }
 
-                    $fromid = " AND id > $lastid "; 
+                    $fromid = " AND id > $lastid ";
                 }
             }
 
@@ -813,7 +983,7 @@ sub RecentPage {
     my $destfile = "$cache/recent.rss";
     overwrite_file( $destfile, _make_rss( 'recent', undef, \@recent ) );
 }
- 
+
 #----------------------------------------------------------------------------
 # Private Interface Functions
 

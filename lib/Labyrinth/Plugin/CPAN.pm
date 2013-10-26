@@ -127,6 +127,18 @@ sub Configure {
 #----------------------------------------------------------------------------
 # Private Interface Functions
 
+sub GetTesterProfile {
+    my ($self,$id) = @_;
+
+    return $TESTERS{$id}    if($TESTERS{$id});
+    
+    my @rows = $dbi->GetQuery('hash','GetTesterProfile',$id);
+    return unless(@rows);
+    
+    $TESTERS{$id} = $rows[0];
+    return $TESTERS{$id};
+}
+
 sub FindTester {
     my $str = shift;
 
