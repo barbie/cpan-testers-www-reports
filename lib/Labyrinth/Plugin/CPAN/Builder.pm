@@ -68,6 +68,18 @@ Simple control process.
 
 Rebuilds the index pages for each author and distribution letter directory.
 
+=item RemovePages
+
+Master controller for removing reports from author and distribution pages.
+
+=item RemoveAuthorPages
+
+Routine for removing reports from author pages.
+
+=item RemoveDistroPages
+
+Routine for removing reports from distribution pages.
+
 =item AuthorPages
 
 Rebuilds a named author page.

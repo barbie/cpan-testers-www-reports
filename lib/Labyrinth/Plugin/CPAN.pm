@@ -48,6 +48,10 @@ Creates a database connection to the cpanstats database.
 
 Reads the CPAN configuration file and stores settings.
 
+=item GetTesterProfile
+
+Given the profile id of a tester, returns their credentials, if known.
+
 =item FindTester
 
 Given a tester string, determines who to record it as in the system.
