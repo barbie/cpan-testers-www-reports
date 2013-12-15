@@ -5,6 +5,9 @@ Changes for the CPAN Testers Reports website
         - included new scripts used in live.
         - included missing templates used in live.
         - updated scripts and templates used in live.
+        - fixed RSS dates as highlighted by Ricardo Signes.
+        - restricted RSS feeds to one year, suggested by David Wheeler.
+        - hacks to support RSS v2.0.
 
 3.43    2013-07-10
         - added compress-reports.pl to start compressing reports in the 

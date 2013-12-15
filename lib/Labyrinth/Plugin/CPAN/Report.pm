@@ -134,8 +134,10 @@ sub load_rss {
         $nopass = 1;
     }
 
-    my $cache = sprintf "%s/static/%s/%s/%s", $settings{webdir}, $type, substr($cgiparams{name},0,1), $cgiparams{name};
+    my @dt = localtime(time);
+    my $olddate = sprintf "%04d%02d%02d%02d%02d", $dt[5]+1899, $dt[4], $dt[3], $dt[2], $dt[1];
 
+    my $cache = sprintf "%s/static/%s/%s/%s", $settings{webdir}, $type, substr($cgiparams{name},0,1), $cgiparams{name};
     #LogDebug("cache=$cache");
 
     # load JSON data if available
@@ -144,6 +146,7 @@ sub load_rss {
         my $data = decode_json($json);
         my @reports;
         for my $row (sort {$b->{fulldate} <=> $a->{fulldate}} @$data) {
+            next    if($row->{fulldate} lt $olddate); # ignore anything older than a year
             next    if($nopass && $row->{state} =~ /PASS/i);
             push @reports, $row;
         }
@@ -185,9 +188,6 @@ sub make_rss {
     #use Data::Dumper;
     #LogDebug("first report = ".Dumper($data->[0]));
 
-    my @date = $data->[0]->{fulldate} =~ /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})/;
-    my $date = sprintf "%04d-%02d-%02dT%02d:%02d+01:00", @date;
-
     my $rss = XML::RSS->new( version => '2.0' );
     $rss->channel(
         title           => $settings{rsstitle},
@@ -202,14 +202,21 @@ sub make_rss {
     );
 
     for my $test (@$data) {
-        my @date = $test->{fulldate} =~ /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})/;
-        my $date = sprintf "%04d-%02d-%02dT%02d:%02d+01:00", @date;
+        $test->{fulldate} ||= '000000000000';
+        $test->{guid}     ||= '';
+        $test->{id}       ||= 0;
+
         my $title = sprintf "%s %s-%s %s on %s %s (%s)", map {$_||''} @{$test}{ qw( status dist version perl osname osvers platform ) };
+
+        #LogDebug("ERROR: $test->{fulldate} - $title");
+
+        my $time = unformatDate(21,$test->{fulldate});
+        my $date = formatDate(16,$time);
 
         #LogDebug("title=".$title);
         #LogDebug("link="."$settings{reportlink2}/" . ($test->{guid} || $test->{id}));
         #LogDebug("guid="."$settings{reportlink2}/" . ($test->{guid} || $test->{id}));
-        #LogDebug("pubDate=".formatDate(16,$date)."/$date");
+        #LogDebug("pubDate=$date");
 
         $rss->add_item(
             title       => $title,
@@ -222,7 +229,14 @@ sub make_rss {
 
     #LogDebug("rss = ".$rss->as_string);
 
-    return $rss->as_string;
+    # the following hacks are necessary as XML::RSS doesn't fully support RSS v2.0
+    $link =~ s/\.html$/\.rss/;
+    $link =~ s/\.rss/-nopass.rss/   if($type eq 'nopass');
+    my $str = $rss->as_string;
+    $str =~ s!<rss version="2.0"!<rss version="2.0"\nxmlns:atom="http://www.w3.org/2005/Atom"!;
+    $str =~ s!<channel>!<channel>\n<atom:link href="$link" rel="self" type="application/rss+xml" />!;
+
+    return $str;
 }
 
 sub AuthorYAML { load_yaml('author'); }
