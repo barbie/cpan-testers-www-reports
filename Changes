@@ -2,6 +2,9 @@ Changes for the CPAN Testers Reports website
 
         - Added functionality for 'rmdist' and 'rmauth' for removing reports.
         - added missing prereq in makefile.PL
+        - included new scripts used in live.
+        - included missing templates used in live.
+        - updated scripts and templates used in live.
 
 3.43    2013-07-10
         - added compress-reports.pl to start compressing reports in the 

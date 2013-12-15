@@ -43,7 +43,7 @@ $settings{autocommit} = 0;
 Labyrinth::Globals::DBConnect();
 
 my %options;
-GetOptions( \%options, 'datetime|d' );
+GetOptions( \%options, 'datetime|d=i' );
 my $datetime = $options{datetime} ? $options{datetime} : time() - 60 * 60 * 24 * 7 * 6;
 
 my @areas = $dbi->GetQuery('hash','GetHitAreas');
@@ -55,10 +55,22 @@ for my $rs (@areas) {
         next    if($row->{number} == 1 && $row->{createdate} == 0);
 
         $dbi->DoQuery('StartTrans');
-        my $rows = $dbi->DoQuery('DelAHit',$datetime,$row->{area},$row->{pageid},$row->{photoid},$row->{query});
+        my $rows;
+        if($row->{query}) {
+            $rows = $dbi->DoQuery('DelAHit',$datetime,$row->{area},$row->{pageid},$row->{photoid},$row->{query});
+        } else {
+            $rows = $dbi->DoQuery('DelAHit2',$datetime,$row->{area},$row->{pageid},$row->{photoid});
+        }
         $dbi->DoQuery('AddAHit',$row->{counter},$row->{area},$row->{pageid},$row->{photoid},$row->{query},0);
         $dbi->DoQuery('CommitTrans');
-        printf "[%6d] %6d,%15s,%3d,%3d,%s\n", $rows, $row->{counter},$row->{area},$row->{pageid},$row->{photoid},$row->{query};
+
+        $rows ||= 0;
+        $row->{pageid}  ||= 0;
+        $row->{photoid} ||= 0;
+        $row->{counter} ||= 0;
+        $row->{query}   ||= '';
+
+        printf "[%6d,%6d] %9d,%15s,%4d,%5d,%s\n", $rows,$row->{number},$row->{counter},$row->{area},$row->{pageid},$row->{photoid},$row->{query};
     }
 }
 

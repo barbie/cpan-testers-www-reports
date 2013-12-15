@@ -4,6 +4,8 @@ use strict;
 use vars qw($VERSION);
 $VERSION = '3.43';
 
+$|++;
+
 #----------------------------------------------------------------------------
 
 =head1 NAME
@@ -57,6 +59,7 @@ sub init_options {
     GetOptions(\%options, 'from=i', 'to=i') or usage();
     usage(1,'missing lower limit --from')                           unless(defined $options{from});
     $options{to} ||= $options{from} + $limit;
+#print "$options{to} - $options{from} = " .  $options{to}-$options{from} . "\n";
     usage(1,'lower limit os greater than upper limit')              unless($options{from} < $options{to});
     usage(1,'difference between limits is greater than 1 million')  unless($options{to} - $options{from} <= $limit);
 
@@ -91,7 +94,11 @@ sub init_options {
 sub process_reports {
     for my $next ( $options{from} .. $options{to} ) {
         my @rows = $dbx->GetQuery('hash','GetReport',$next);
-        return  unless(@rows);
+        unless(@rows) {
+            print "$next: no report\n";
+            next;
+        }
+
         my $row = $rows[0];
 
         my ($data,$json);
