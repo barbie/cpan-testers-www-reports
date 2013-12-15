@@ -6,7 +6,10 @@ Disallow: /*.rss$
 Disallow: /*.json$
 
 User-agent: msnbot
-Disallow: /
+Disallow: /private/
+Disallow: /*.yaml$
+Disallow: /*.rss$
+Disallow: /*.json$
 
 User-agent: DotBot
 Crawl-delay: 600
@@ -21,4 +24,3 @@ Disallow: /private/
 Disallow: /*.yaml$
 Disallow: /*.rss$
 Disallow: /*.json$
-

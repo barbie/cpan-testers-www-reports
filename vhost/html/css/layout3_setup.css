@@ -18,8 +18,8 @@
 /* NON-HEADER */
 *{padding:0; margin:0;}
  body {font-size:9pt; background-color:rgb(255,255,255); font-family:verdana,arial,sans-serif;} /*Font-size: 1.0em = 10px when browser default size is 16px*/
-.page-container {width:90%; margin:0px auto; margin-top:10px; margin-bottom:10px; border:solid 1px rgb(150,150,150); font-size:0.9em;}
-.main {clear:both; width:90%; padding-bottom:30px; background:transparent url(/images/layout/bg_main_withnav.jpg) top left repeat-y;}
+.page-container {width:900px; margin:0px auto; margin-top:10px; margin-bottom:10px; border:solid 1px rgb(150,150,150); font-size:0.9em;}
+.main {clear:both; width:900px; padding-bottom:30px; background:transparent url(/images/layout/bg_main_withnav.jpg) top left repeat-y;}
 .main-navigation {display:inline /*Fix IE floating margin bug*/; float:left; width:200px; overflow:visible !important /*Firefox*/; overflow:hidden /*IE6*/;}
 .main-content {display:inline; /*Fix IE floating margin bug*/; float:left; width:640px; margin:0 0 0 30px; overflow:visible !important /*Firefox*/; overflow:hidden /*IE6*/;}
 .footer {clear:both; width:900px; padding:1.0em 0 1.0em 0; background:rgb(225,225,225) url(/images/layout/bg_foot.jpg) no-repeat; font-size:0.9em; overflow:visible !important /*Firefox*/; overflow:hidden /*IE6*/;}

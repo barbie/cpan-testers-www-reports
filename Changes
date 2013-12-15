@@ -1,5 +1,9 @@
 Changes for the CPAN Testers Reports website
 
+        - layout fixes to static CSS.
+        - rel=nofollow updates to iheart.js.
+        - exclude rss/yml/json from msnbot crawlers.
+
 3.44    2013-12-15
         - Added functionality for 'rmdist' and 'rmauth' for removing reports.
         - added missing prereq in makefile.PL

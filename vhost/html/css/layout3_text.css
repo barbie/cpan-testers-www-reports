@@ -185,3 +185,7 @@ p.caption {clear:both; margin:0.5em 0 2.0em 20px; text-align:left; color:rgb(80,
 .main-content table td.FAIL     { background-color: #990000; color: #fff; }
 .main-content table td.UNKNOWN  { background-color: #999900; color: #fff; }
 .main-content table td.NA       { background-color: #999900; color: #fff; }
+
+#iheart a img,
+#iheart a:hover img,
+#iheart a:visited img { border:0 }
