@@ -238,7 +238,7 @@ sub RemovePages {
     $types = "'rmauth'" if($type && $type eq 'author');
     $types = "'rmdist'" if($type && $type eq 'distro');
 
-    my @rows = $dbi->GetQuery('hash',GetRequests,{types => $types, limit => 20});
+    my @rows = $dbi->GetQuery('hash','GetRequests',{types => $types, limit => 20});
     return 0    unless(@rows);
 
     my @index = $dbi->GetQuery('hash','GetIndexRequests',{types => $types});
@@ -274,7 +274,7 @@ sub RemoveAuthorPages {
     my $destfile = "$cache/$name.json";
 
     # get reports
-    my %remove;
+    my (%remove,@reports);
     my $next = $dbi->Iterator('hash','GetReportsByIDs',{ids=>join(',',@ids)});
     while(my $row = $next->()) {
         next    unless($dists{$row->{dist}} && $row->{version});
@@ -369,7 +369,7 @@ sub RemoveDistroPages {
         my $destfile = "$cache/$name.json";
 
         # get reports
-        my %remove;
+        my (%remove,@reports);
         my $next = $dbi->Iterator('hash','GetReportsByIDs',{ids=>join(',',@ids)});
         while(my $row = $next->()) {
             # hash of dist => summary => PASS, FAIL, NA, UNKNOWN
