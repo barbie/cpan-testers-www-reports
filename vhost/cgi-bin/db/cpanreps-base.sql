@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.1.41, for debian-linux-gnu (i486)
+-- MySQL dump 10.13  Distrib 5.5.34, for debian-linux-gnu (i686)
 --
--- Host: localhost    Database: cpanblog
+-- Host: localhost    Database: reports
 -- ------------------------------------------------------
--- Server version	5.1.41-3ubuntu12.10
+-- Server version	5.5.34-0ubuntu0.12.04.1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -249,11 +249,6 @@ CREATE TABLE `imetadata` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `imetadata`
---
-
-
---
 -- Table structure for table `ipindex`
 --
 
@@ -267,11 +262,6 @@ CREATE TABLE `ipindex` (
   PRIMARY KEY (`ipaddr`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `ipindex`
---
-
 
 --
 -- Table structure for table `ixfolderrealm`
@@ -483,6 +473,26 @@ CREATE TABLE `realms` (
 INSERT INTO `realms` VALUES (1,'public','Public Interface','home-main');
 INSERT INTO `realms` VALUES (2,'admin','Admin Interface','home-admin');
 
+DROP TABLE IF EXISTS `requests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `requests` (
+  `requestid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `section` varchar(15) NOT NULL,
+  `command` varchar(15) NOT NULL,
+  `actions` varchar(1000) DEFAULT NULL,
+  `layout` varchar(255) DEFAULT NULL,
+  `content` varchar(255) DEFAULT NULL,
+  `onsuccess` varchar(32) DEFAULT NULL,
+  `onerror` varchar(32) DEFAULT NULL,
+  `onfailure` varchar(32) DEFAULT NULL,
+  `secure` enum('off','on','either','both') DEFAULT 'off',
+  `rewrite` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`requestid`),
+  KEY `sectcomm` (`section`,`command`)
+) ENGINE=MyISAM AUTO_INCREMENT=84 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `sessions`
 --
@@ -507,10 +517,6 @@ CREATE TABLE `sessions` (
   KEY `IXUSER` (`userid`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sessions`
---
 
 --
 -- Table structure for table `sponsors`
@@ -553,11 +559,6 @@ CREATE TABLE `updates` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `updates`
---
-
-
---
 -- Table structure for table `users`
 --
 
@@ -598,4 +599,4 @@ INSERT INTO `users` VALUES (2,1,1,'Guest','guest','GUEST','public','c8d6ea7f8e68
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2011-04-08  7:49:47
+-- Dump completed on 2014-02-24 23:02:12
