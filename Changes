@@ -1,8 +1,12 @@
 Changes for the CPAN Testers Reports website
 
+3.45    2014-03-02
         - layout fixes to static CSS.
         - rel=nofollow updates to iheart.js.
         - exclude rss/yml/json from msnbot crawlers.
+        - various minor fixes.
+        - upgrade to Labyrinth-5.20.
+        - upgrade to Labyrinth-Plugin-Core-5.14.
 
 3.44    2013-12-15
         - Added functionality for 'rmdist' and 'rmauth' for removing reports.
