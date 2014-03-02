@@ -43,7 +43,7 @@ $settings{autocommit} = 0;
 Labyrinth::Globals::DBConnect();
 
 my %options;
-GetOptions( \%options, 'datetime|d=i' );
+GetOptions( \%options, 'datetime|d=i' ) or die;
 my $datetime = $options{datetime} ? $options{datetime} : time() - 60 * 60 * 24 * 7 * 6;
 
 my @areas = $dbi->GetQuery('hash','GetHitAreas');
@@ -78,7 +78,7 @@ __END__
 
 =head1 AUTHOR
 
-  Copyright (c) 2002-2010 Barbie <barbie@cpan.org> Miss Barbell Productions.
+  Copyright (c) 2002-2014 Barbie <barbie@cpan.org> Miss Barbell Productions.
 
 =head1 LICENSE
 

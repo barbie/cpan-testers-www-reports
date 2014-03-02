@@ -210,7 +210,7 @@ sub make_rss {
 
         #LogDebug("ERROR: $test->{fulldate} - $title");
 
-        my $time = unformatDate(21,$test->{fulldate});
+        my $time = unformatDate(22,$test->{fulldate});
         my $date = formatDate(16,$time);
 
         #LogDebug("title=".$title);
