@@ -57,7 +57,7 @@ CREATE TABLE `acls` (
   KEY `IXFOLDER` (`folderid`),
   KEY `IXGROUP` (`groupid`),
   KEY `IXUSER` (`userid`)
-) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -67,8 +67,6 @@ CREATE TABLE `acls` (
 INSERT INTO `acls` VALUES (1,1,9,0,5);
 INSERT INTO `acls` VALUES (2,1,1,0,1);
 INSERT INTO `acls` VALUES (3,1,0,5,4);
-INSERT INTO `acls` VALUES (4,1,0,9,4);
-INSERT INTO `acls` VALUES (5,1,0,3,5);
 
 --
 -- Table structure for table `articles`
@@ -117,18 +115,19 @@ DROP TABLE IF EXISTS `folders`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `folders` (
   `folderid` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `foldername` varchar(255) DEFAULT NULL,
-  `ref` varchar(255) DEFAULT NULL,
+  `path` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `parent` int(10) DEFAULT NULL,
-  PRIMARY KEY (`folderid`)
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+  `accessid` int(10) NOT NULL DEFAULT '5',
+  PRIMARY KEY (`folderid`),
+  KEY `IXPATH` (`path`)
+) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `folders`
 --
 
-INSERT INTO `folders` VALUES (1,'Site','1',0);
+INSERT INTO `folders` VALUES (1,'public',0,1);
 
 --
 -- Table structure for table `groups`
@@ -462,7 +461,8 @@ CREATE TABLE `realms` (
   `realm` varchar(255) DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   `command` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`realmid`)
+  PRIMARY KEY (`realmid`),
+  KEY `IXREALM` (`realm`)
 ) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -472,6 +472,10 @@ CREATE TABLE `realms` (
 
 INSERT INTO `realms` VALUES (1,'public','Public Interface','home-main');
 INSERT INTO `realms` VALUES (2,'admin','Admin Interface','home-admin');
+
+--
+-- Table structure for table `requests`
+--
 
 DROP TABLE IF EXISTS `requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -492,6 +496,94 @@ CREATE TABLE `requests` (
   KEY `sectcomm` (`section`,`command`)
 ) ENGINE=MyISAM AUTO_INCREMENT=84 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `requests`
+--
+
+INSERT INTO `requests` VALUES (1,'link','admin','Links::Admin','','links/link_adminlist.html','','','','off','');
+INSERT INTO `requests` VALUES (2,'link','csave',',Links::CatSave','','','link-cedit','link-cedit','','off','');
+INSERT INTO `requests` VALUES (3,'link','cadmin','Links::CatAdmin','','links/cat_adminlist.html','','','','off','');
+INSERT INTO `requests` VALUES (4,'link','add','Links::Add','','links/link_adminedit.html','','','','off','');
+INSERT INTO `requests` VALUES (5,'link','edit','Links::Edit','','links/link_adminedit.html','','','','off','');
+INSERT INTO `requests` VALUES (6,'link','cadd','','','links/cat_adminedit.html','','','','off','');
+INSERT INTO `requests` VALUES (7,'link','main','Links::List','','links/link_list.html','','','','off','');
+INSERT INTO `requests` VALUES (8,'link','cedit','Links::CatEdit','','links/cat_adminedit.html','','','','off','');
+INSERT INTO `requests` VALUES (9,'link','save','Links::CheckLink,Links::Save','','','link-edit','link-edit','','off','');
+INSERT INTO `requests` VALUES (10,'link','delete','Links::Delete','','','link-admin','','','off','');
+INSERT INTO `requests` VALUES (11,'imgs','save','Images::Save','','','imgs-admin','','imgs-failure','off','');
+INSERT INTO `requests` VALUES (12,'imgs','admin','Images::List','','images/image-list.html','','','','off','');
+INSERT INTO `requests` VALUES (13,'imgs','failure','','','images/image-failure.html','','','','off','');
+INSERT INTO `requests` VALUES (14,'imgs','add','Images::Add','','images/image-edit.html','','','','off','');
+INSERT INTO `requests` VALUES (15,'imgs','delete','Images::Delete','','','imgs-admin','','imgs-failure','off','');
+INSERT INTO `requests` VALUES (16,'imgs','edit','Images::Edit','','images/image-edit.html','','','','off','');
+INSERT INTO `requests` VALUES (17,'cpan','distunk','','','cpan/distro-unknown.html','','','','off','');
+INSERT INTO `requests` VALUES (18,'cpan','authors','CPAN::Authors::List','','cpan/author-list.html','','','','off','');
+INSERT INTO `requests` VALUES (19,'cpan','report','CPAN::Report::View','','cpan/report-view.html','','','','off','');
+INSERT INTO `requests` VALUES (20,'cpan','distro','CPAN::Distros::Reports','','cpan/distro-reports.html','','','','off','');
+INSERT INTO `requests` VALUES (21,'cpan','authunk','','','cpan/author-unknown.html','','','','off','');
+INSERT INTO `requests` VALUES (22,'cpan','distros','CPAN::Distros::List','','cpan/distro-list.html','','','','off','');
+INSERT INTO `requests` VALUES (23,'cpan','author','CPAN::Authors::Reports','','cpan/author-reports.html','','','','off','');
+INSERT INTO `requests` VALUES (24,'menu','save','Menus::Save','','','menu-edit','menu-edit','','off','');
+INSERT INTO `requests` VALUES (25,'menu','admin','Menus::Admin','','menus/menu_adminlist.html','','','','off','');
+INSERT INTO `requests` VALUES (26,'menu','add','Menus::Add','','menus/menu_adminedit.html','','','','off','');
+INSERT INTO `requests` VALUES (27,'menu','delete','Menus::Delete','','','menu-admin','','','off','');
+INSERT INTO `requests` VALUES (28,'menu','edit','Menus::Edit','','menus/menu_adminedit.html','','','','off','');
+INSERT INTO `requests` VALUES (29,'arts','save','Articles::Site::Save','','','arts-edit','arts-edit','arts-failure','','');
+INSERT INTO `requests` VALUES (30,'arts','admin','Articles::Site::Admin','','articles/arts-adminlist.html','','','','','');
+INSERT INTO `requests` VALUES (31,'arts','failure','','','articles/arts-failure.html','','','','off','');
+INSERT INTO `requests` VALUES (32,'arts','add','Articles::Site::Add','','articles/arts-adminedit.html','','','','','');
+INSERT INTO `requests` VALUES (33,'arts','delete','Articles::Site::Delete','','','arts-admin','','arts-failure','','');
+INSERT INTO `requests` VALUES (34,'arts','item','Articles::Site::Item','','articles/arts-item.html','','','','','');
+INSERT INTO `requests` VALUES (35,'arts','edit','Articles::Site::Edit','','articles/arts-adminedit.html','','','','','');
+INSERT INTO `requests` VALUES (36,'hits','admin','Hits::AdminHits','','hits/hits_admin.html','','','','','');
+INSERT INTO `requests` VALUES (37,'user','add','Users::Add','','users/user-adminedit.html','','','','off','');
+INSERT INTO `requests` VALUES (38,'user','acldel','Users::ACLDelete','','','user-acl','user-acl','user-acl','off','');
+INSERT INTO `requests` VALUES (39,'user','item','Users::Item','','users/user-item.html','','','','off','');
+INSERT INTO `requests` VALUES (40,'user','edit','Users::Edit','','users/user-edit.html','','','','off','');
+INSERT INTO `requests` VALUES (41,'user','aclsave','Users::ACLSave','','','user-acl','user-acl','user-acl','off','');
+INSERT INTO `requests` VALUES (42,'user','save','Users::Save','','','user-adminedit','user-adminedit','user-failure','off','');
+INSERT INTO `requests` VALUES (43,'user','failure','','','users/user-failure.html','','','','off','');
+INSERT INTO `requests` VALUES (44,'user','chng','Users::Password','','','user-edit','user-pass','','off','');
+INSERT INTO `requests` VALUES (45,'user','logout','Users::Logout','','','home-main','','','off','');
+INSERT INTO `requests` VALUES (46,'user','list','Users::UserLists','','users/user-list.html','','','','off','');
+INSERT INTO `requests` VALUES (47,'user','admin','Users::Admin','','users/user-adminlist.html','','','','off','');
+INSERT INTO `requests` VALUES (48,'user','pass','Users::Name','','users/user-pass.html','','','','off','');
+INSERT INTO `requests` VALUES (49,'user','acl','Users::ACL','','users/user-acl.html','','','','off','');
+INSERT INTO `requests` VALUES (50,'user','ban','Users::Ban','','','user-admin','','user-failure','off','');
+INSERT INTO `requests` VALUES (51,'user','login','','','users/user-login.html','','','','off','');
+INSERT INTO `requests` VALUES (52,'user','amend','Users::Save','','','user-edit','user-editerror','user-failure','off','');
+INSERT INTO `requests` VALUES (53,'user','logged','Users::Login,Users::Retrieve','','','','user-login','user-login','off','');
+INSERT INTO `requests` VALUES (54,'user','delete','Users::Delete','','','user-admin','','user-failure','off','');
+INSERT INTO `requests` VALUES (55,'user','adminedit','Users::Edit','','users/user-adminedit.html','','','','off','');
+INSERT INTO `requests` VALUES (56,'realm','admin','Content::GetVersion,Menus::LoadMenus','admin/layout.html','','','','','off','');
+INSERT INTO `requests` VALUES (57,'realm','popup','','public/popup.html','','','','','off','');
+INSERT INTO `requests` VALUES (58,'realm','public','Content::GetVersion,Hits::SetHits,Menus::LoadMenus','public/layout.html','','','','','off','');
+INSERT INTO `requests` VALUES (59,'realm','wide','','public/layout-wide.html','','','','','off','');
+INSERT INTO `requests` VALUES (60,'error','badmail','','','public/badmail.html','','','','off','');
+INSERT INTO `requests` VALUES (61,'error','badcmd','','','public/badcommand.html','','','','off','');
+INSERT INTO `requests` VALUES (62,'error','banuser','','','public/banuser.html','','','','off','');
+INSERT INTO `requests` VALUES (63,'error','badaccess','Users::LoggedIn','','public/badaccess.html','','error-login','','off','');
+INSERT INTO `requests` VALUES (64,'error','baduser','','','public/baduser.html','','','','off','');
+INSERT INTO `requests` VALUES (65,'error','login','Users::Store','','users/user-login.html','','','','off','');
+INSERT INTO `requests` VALUES (66,'error','message','','','public/error_message.html','','','','off','');
+INSERT INTO `requests` VALUES (67,'home','admin','','','admin/backend_index.html','','','','off','');
+INSERT INTO `requests` VALUES (68,'home','prefs','CPAN::Authors::Basic','','cpan/prefs.html','','','','off','');
+INSERT INTO `requests` VALUES (69,'home','status','CPAN::Authors::Status','','content/status.html','','','','off','');
+INSERT INTO `requests` VALUES (70,'home','main','CPAN::Authors::Status','','content/welcome.html','','','','off','');
+INSERT INTO `requests` VALUES (71,'req','admin','Requests::Admin',NULL,'request/request_adminlist.html','','',NULL,'off',NULL);
+INSERT INTO `requests` VALUES (72,'req','add','Requests::Add',NULL,'request/request_adminedit.html','','',NULL,'off',NULL);
+INSERT INTO `requests` VALUES (73,'req','edit','Requests::Edit',NULL,'request/request_adminedit.html','','',NULL,'off',NULL);
+INSERT INTO `requests` VALUES (74,'req','save','Requests::Save',NULL,'','req-edit','req-edit',NULL,'off',NULL);
+INSERT INTO `requests` VALUES (75,'req','delete','Requests::Delete',NULL,'','req-admin','',NULL,'off',NULL);
+INSERT INTO `requests` VALUES (76,'user','adminpass','Users::AdminPass',NULL,'users/user-adminpass.html','','',NULL,'off',NULL);
+INSERT INTO `requests` VALUES (77,'user','adminchng','Users::AdminChng',NULL,'','user-adminedit','user-adminpass',NULL,'off',NULL);
+INSERT INTO `requests` VALUES (78,'cpan','drss','CPAN::Report::DistroRSS',NULL,'public/blank.html','','',NULL,'off',NULL);
+INSERT INTO `requests` VALUES (79,'cpan','arss','CPAN::Report::AuthorRSS',NULL,'public/blank.html','','',NULL,'off',NULL);
+INSERT INTO `requests` VALUES (80,'realm','yaml','','public/layout.yaml','','','',NULL,'off',NULL);
+INSERT INTO `requests` VALUES (81,'realm','rss','','public/layout.rss','','','',NULL,'off',NULL);
+INSERT INTO `requests` VALUES (82,'cpan','dyml','CPAN::Report::DistroYAML',NULL,'public/blank.html','','',NULL,'off',NULL);
+INSERT INTO `requests` VALUES (83,'cpan','ayml','CPAN::Report::AuthorYAML',NULL,'public/blank.html','','',NULL,'off',NULL);
 
 --
 -- Table structure for table `sessions`
@@ -559,6 +651,12 @@ CREATE TABLE `updates` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `updates`
+--
+
+INSERT INTO `updates` VALUES (1,'site',0,1216750322,'2008-07-22 18:12:02');
+
+--
 -- Table structure for table `users`
 --
 
@@ -576,9 +674,11 @@ CREATE TABLE `users` (
   `password` varchar(255) DEFAULT NULL,
   `url` varchar(255) DEFAULT NULL,
   `aboutme` blob,
+  `search` int(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`userid`),
   KEY `IXACCESS` (`accessid`),
-  KEY `IXIMAGE` (`imageid`)
+  KEY `IXIMAGE` (`imageid`),
+  KEY `IXEMAIL` (`email`)
 ) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -586,8 +686,8 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` VALUES (1,5,1,'','Master','master@missbarbell.co.uk','admin','c00a8735efadd488c3251ef24211cd2e7baa9e66','','');
-INSERT INTO `users` VALUES (2,1,1,'Guest','guest','GUEST','public','c8d6ea7f8e6850e9ed3b642900ca27683a257201','','');
+INSERT INTO `users` VALUES (1,5,1,'','Master','master@missbarbell.co.uk','admin','c00a8735efadd488c3251ef24211cd2e7baa9e66','','',0);
+INSERT INTO `users` VALUES (2,1,1,'Guest','guest','GUEST','public','c8d6ea7f8e6850e9ed3b642900ca27683a257201','','',0);
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -599,4 +699,4 @@ INSERT INTO `users` VALUES (2,1,1,'Guest','guest','GUEST','public','c8d6ea7f8e68
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-02-24 23:02:12
+-- Dump completed on 2014-03-02 22:17:03

@@ -1,5 +1,8 @@
 Changes for the CPAN Testers Reports website
 
+3.46    2014-03-02
+        - removed 'reports_' as a prefix to database tables.
+
 3.45    2014-03-02
         - layout fixes to static CSS.
         - rel=nofollow updates to iheart.js.
