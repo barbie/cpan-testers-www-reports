@@ -1,5 +1,7 @@
 Changes for the CPAN Testers Reports website
 
+        - exclude NA reports from the nopass RSS feeds (as requested by RJBS).
+
 3.46    2014-03-02
         - removed 'reports_' as a prefix to database tables.
 

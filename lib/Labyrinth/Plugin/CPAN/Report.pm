@@ -147,7 +147,7 @@ sub load_rss {
         my @reports;
         for my $row (sort {$b->{fulldate} <=> $a->{fulldate}} @$data) {
             next    if($row->{fulldate} lt $olddate); # ignore anything older than a year
-            next    if($nopass && $row->{state} =~ /PASS/i);
+            next    if($nopass && $row->{state} =~ /PASS|NA/i);
             push @reports, $row;
         }
 
