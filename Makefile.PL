@@ -16,6 +16,7 @@ WriteMakefile(
 
         # Labyrinth Modules
         'Labyrinth'                         => '5.20',
+        'Labyrinth::DIUtils::ImageMagick'   => '5.04',
         'Labyrinth::Plugin::Core'           => '5.14',
         'Labyrinth::Plugin::Requests'       => '1.00',
 
@@ -25,7 +26,6 @@ WriteMakefile(
         'Cwd'                               => 0,
         'Data::Dumper'                      => 0,
         'File::Basename'                    => 0,
-        'File::Copy'                        => 0,
         'File::Path'                        => 0,
         'IO::File'                          => 0,
 
