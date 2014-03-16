@@ -1,5 +1,6 @@
 Changes for the CPAN Testers Reports website
 
+3.47    2014-03-16
         - exclude NA reports from the nopass RSS feeds (as requested by RJBS).
 
 3.46    2014-03-02

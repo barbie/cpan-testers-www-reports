@@ -2,7 +2,7 @@
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.44';
+$VERSION = '3.47';
 
 #----------------------------------------------------------------------------
 
@@ -67,7 +67,7 @@ F<http://blog.cpantesters.org/>
 
 =head1 COPYRIGHT AND LICENSE
 
-  Copyright (C) 2008-2013 Barbie <barbie@cpan.org>
+  Copyright (C) 2008-2014 Barbie <barbie@cpan.org>
 
   This module is free software; you can redistribute it and/or
   modify it under the Artistic License 2.0.
