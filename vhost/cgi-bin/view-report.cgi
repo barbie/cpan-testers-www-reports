@@ -51,6 +51,13 @@ use CPAN::Testers::Common::Article;
 use CPAN::Testers::Common::Utils qw(nntp_to_guid guid_to_nntp);
 use CPAN::Testers::Fact::LegacyReport;
 use CPAN::Testers::Fact::TestSummary;
+use CPAN::Testers::Report;
+
+use Metabase    0.004;
+use Metabase::Fact;
+use Metabase::Resource;
+use Metabase::Resource::cpan::distfile;
+use Metabase::Resource::metabase::user;
 
 # -------------------------------------
 # Variables
@@ -81,7 +88,9 @@ sub init_options {
     error("Configuration file [$options{config}] not found\n")  unless(-f $options{config});
 
     $serializer = Data::FlexSerializer->new(
-        detect_compression => 1,
+        detect_compression  => 1,
+        detect_sereal       => 1,
+        detect_json         => 1,
     );
 
     # load configuration
@@ -120,8 +129,11 @@ sub process_report {
 }
 
 sub retrieve_report {
+    $tvars{body}{result} = '""';
+
     if($cgiparams{id} =~ /^\d+$/) {
         my @rows = $dbi->GetQuery('hash','GetStatReport',$cgiparams{id});
+
         if(@rows) {
             if($rows[0]->{guid} =~ /^[0-9]+\-[-\w]+$/) {
                 my $id = guid_to_nntp($rows[0]->{guid});
@@ -139,7 +151,7 @@ sub retrieve_report {
         if($id) {
             _parse_nntp_report($id);
         } else {
-          _parse_guid_report();
+            _parse_guid_report();
         }
     } else {
         $cgiparams{id} =~ s/[\w-]+//g;
@@ -153,7 +165,10 @@ sub retrieve_report {
         }
     }
 
-    if($cgiparams{raw}) {
+    if($cgiparams{json}) {
+        $tvars{body}{success} = $tvars{body}{result} && $tvars{body}{result} ne '""' ? 1 : 0;
+        $tvars{layout}  = 'public/layout.json';
+    } elsif($cgiparams{raw}) {
         $tvars{article}{raw} = $cgiparams{raw};
         $tvars{layout} = 'public/popup.html'
     } else {
@@ -174,8 +189,6 @@ sub print_report {
 sub _parse_nntp_report {
     my $nntpid = shift;
     my @rows;
-
-LogDebug("parse nntp report: 1.nntp=$nntpid / $cgiparams{id}");
 
     unless($nntpid) {
        @rows = $dbi->GetQuery('hash','GetStatReport',$cgiparams{id});
@@ -237,48 +250,73 @@ sub _parse_guid_report {
     my $cpan = Labyrinth::Plugin::CPAN->new();
     $cpan->Configure();
 
-LogDebug("parse guid report: $cgiparams{id}");
-
     my @rows = $dbi->GetQuery('hash','GetMetabaseByGUID',$cgiparams{id});
-    return  unless(@rows);
+    return unless(@rows);
 
-    my $data = $serializer->deserialize($rows[0]->{report});
-    #my $data = decode_json($rows[0]->{report});
+    my $row = $rows[0];
 
-LogDebug("data: ".Dumper($data));
+    my ($report,$data);
+    if($row->{fact}) {
+        eval { $report = $serializer->deserialize($row->{fact}); };
+        return if($@);
+
+        $data = dereference_report($report);
+    } else {
+        $data = $serializer->deserialize($row->{report});
+        $report = { metadata => { core => { guid => $row->{guid}, type => 'CPAN-Testers-Report' } } };
+        for my $name (keys %$data) {
+            push @{$report->{content}}, $data->{$name};
+        }
+    }
 
     my $fact;
-    eval { $fact = CPAN::Testers::Fact::LegacyReport->from_struct( $data->{'CPAN::Testers::Fact::LegacyReport'} ) };
+    eval { 
+        $data->{'CPAN::Testers::Fact::LegacyReport'}{content} = encode_json($data->{'CPAN::Testers::Fact::LegacyReport'}{content})
+            if(ref $data->{'CPAN::Testers::Fact::LegacyReport'}{content} eq 'HASH');
+        $fact = CPAN::Testers::Fact::LegacyReport->from_struct( $data->{'CPAN::Testers::Fact::LegacyReport'} ) 
+    };
     if($@ && !$fact) {
         error('LegacyReport',$@);
         return;
     }
 
     $tvars{article}{article}    = SafeHTML($fact->{content}{textreport});
-    #$tvars{article}{id}         = $rows[0]->{id};
-    $tvars{article}{guid}       = $rows[0]->{guid};
+    $tvars{article}{guid}       = $row->{guid};
 
-    my $report;
-    eval { $report = CPAN::Testers::Fact::TestSummary->from_struct( $data->{'CPAN::Testers::Fact::TestSummary'} ) };
-    if($@ && !$report) {
+    eval { 
+        $data->{'CPAN::Testers::Fact::TestSummary'}{content} = encode_json($data->{'CPAN::Testers::Fact::TestSummary'}{content})
+            if(ref $data->{'CPAN::Testers::Fact::TestSummary'}{content} eq 'HASH');
+        $fact = CPAN::Testers::Fact::TestSummary->from_struct( $data->{'CPAN::Testers::Fact::TestSummary'} ) 
+    };
+    if($@ && !$fact) {
         error('TestSummary',$@);
         return;
     }
 
-    my ($osname) = $cpan->OSName($report->{content}{osname});
+    if($row->{fact}) {
+        $report->{metadata}{core}{$_} = $fact->{metadata}{core}{$_}
+            for(qw(resource schema_version creation_time valid creator update_time));
+    } else {
+        $report->{metadata}{core}{$_} = $data->{'CPAN::Testers::Fact::TestSummary'}{metadata}{core}{$_}
+            for(qw(resource schema_version creation_time valid creator update_time));
+    }
 
-    $tvars{article}{state}      = lc $report->{content}{grade};
-    $tvars{article}{platform}   = $report->{content}{archname};
+    my ($osname);
+    eval { ($osname) = $cpan->OSName($fact->{content}{osname}); };
+    return  if($@);
+
+    $tvars{article}{state}      = lc $fact->{content}{grade};
+    $tvars{article}{platform}   = $fact->{content}{archname};
     $tvars{article}{osname}     = $osname;
-    $tvars{article}{osvers}     = $report->{content}{osversion};
-    $tvars{article}{perl}       = $report->{content}{perl_version};
-    $tvars{article}{created}    = $report->{metadata}{core}{creation_time};
+    $tvars{article}{osvers}     = $fact->{content}{osversion};
+    $tvars{article}{perl}       = $fact->{content}{perl_version};
+    $tvars{article}{created}    = $fact->{metadata}{core}{creation_time};
 
-    my $dist                    = Metabase::Resource->new( $report->{metadata}{core}{resource} );
+    my $dist                    = Metabase::Resource->new( $fact->{metadata}{core}{resource} );
     $tvars{article}{dist}       = $dist->metadata->{dist_name};
     $tvars{article}{version}    = $dist->metadata->{dist_version};
 
-    ($tvars{article}{author},$tvars{article}{from}) = get_tester( $report->creator );
+    ($tvars{article}{author},$tvars{article}{from}) = get_tester( $fact->creator );
     $tvars{article}{author} =~ s/\@/ [at] /g;
     $tvars{article}{from}   =~ s/\@/ [at] /g;
     $tvars{article}{from}   =~ s/\./ [dot] /g;
@@ -297,6 +335,65 @@ LogDebug("data: ".Dumper($data));
 
     $tvars{article}{subject} = sprintf "%s %s-%s %s %s", 
         uc $tvars{article}{state}, $tvars{article}{dist}, $tvars{article}{version}, $tvars{article}{perl}, $tvars{article}{osname};
+
+    $tvars{body}{result} = decode_report($report);
+    LogDebug('DEBUG: report=' . Dumper($report));
+    LogDebug('DEBUG: result=' . Dumper($tvars{body}{result}));
+}
+
+sub decode_report {
+    my $report = shift;
+    my $hash;
+
+    # do we have an encoded report object?
+    if(ref $report eq 'CPAN::Testers::Report') {
+        $hash = $report->as_struct;
+        $hash->{content} = decode_json($hash->{content});
+        for my $content (@{ $hash->{content} }) {
+            $content->{content} = decode_json($content->{content});
+        }
+        
+        return encode_json($hash);
+    }
+
+    # we have a manufactured hash, with a collection of fact objects
+
+    eval {
+        for my $fact (@{ $report->{content} }) {
+            $fact->{content} = decode_json($fact->{content});
+        }
+    };
+
+    return  if($@);
+
+    return encode_json($report);
+
+#    my $hash = { 'CPAN::Testers::Report' => { metadata => $report->{metadata}, content => {} } };
+
+    my @facts = $report->facts();
+    for my $fact (@facts) {
+        my $name = ref $fact;
+        $hash->{'CPAN::Testers::Report'}->{content}{$name} = $fact->as_struct();
+    }
+    return $hash;
+}
+
+sub dereference_report {
+    my ($report) = @_;
+    my %facts;
+
+    eval {
+        my @facts = $report->facts();
+        for my $fact (@facts) {
+            my $name = ref $fact;
+            $facts{$name} = $fact->as_struct;
+            $facts{$name}{content} = decode_json($facts{$name}{content});
+        }
+    };
+
+    return  if($@);
+
+    return \%facts;
 }
 
 sub get_tester {

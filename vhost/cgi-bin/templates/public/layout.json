@@ -1,1 +1,1 @@
-{ "success": "[% body.success %]", "result": "[% body.result %]" }
+{ "success": "[% body.success %]", "result": [% body.result %] }
