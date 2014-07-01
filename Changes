@@ -1,4 +1,7 @@
 Changes for the CPAN Testers Reports website
+============================================
+
+        - add logic for tester preferred contact address.
 
 3.48    2014-03-31
         - server side code for CPAN::Testers::WWW::Reports::Query::Report.

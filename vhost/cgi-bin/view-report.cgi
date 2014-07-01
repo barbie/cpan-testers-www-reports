@@ -404,9 +404,12 @@ sub get_tester {
     return ($creator,$creator)  unless(@rows);
 
     #$rows[0]->{fullname} = encode_entities($rows[0]->{fullname});
-    $rows[0]->{email} ||= $creator;
-    $rows[0]->{email} =~ s/\'/''/g if($rows[0]->{email});
-    return ($rows[0]->{fullname},$rows[0]->{email});
+    my $name = $rows[0]->{fullname};
+    $name = join(' ',$rows[0]->{name},$rows[0]->{pause})    if($rows[0]->{name});
+
+    my $email = $rows[0]->{contact} || $rows[0]->{email} || $creator;
+    $email =~ s/\'/''/g if($email);
+    return ($name,$email);
 }
 
 sub error {
