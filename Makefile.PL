@@ -19,6 +19,7 @@ WriteMakefile(
         'Labyrinth::DIUtils::ImageMagick'   => '5.04',
         'Labyrinth::Plugin::Core'           => '5.14',
         'Labyrinth::Plugin::Requests'       => '1.00',
+        'Labyrinth::Plugin::CPAN'           => '3.50',
 
         # Perl Core Modules
         'CGI'                               => 0,

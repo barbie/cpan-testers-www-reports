@@ -2,7 +2,6 @@ Changes
 examples/example.txt
 examples/pages.cgi
 lib/CPAN/Testers/WWW/Reports.pm
-lib/Labyrinth/Plugin/CPAN.pm
 lib/Labyrinth/Plugin/CPAN/Authors.pm
 lib/Labyrinth/Plugin/CPAN/Builder.pm
 lib/Labyrinth/Plugin/CPAN/Distros.pm

@@ -74,10 +74,6 @@
             "file": "lib/CPAN/Testers/WWW/Reports.pm",
             "version": "3.48"
         },
-        "Labyrinth::Plugin::CPAN": {
-            "file": "lib/Labyrinth/Plugin/CPAN.pm",
-            "version": "3.48"
-        },
         "Labyrinth::Plugin::CPAN::Authors": {
             "file": "lib/Labyrinth/Plugin/CPAN/Authors.pm",
             "version": "3.48"
