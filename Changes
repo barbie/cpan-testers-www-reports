@@ -1,6 +1,7 @@
 Changes for the CPAN Testers Reports website
 ============================================
 
+3.49    2014-07-08
         - add logic for tester preferred contact address.
         - abstracted out Labyrinth-Plugin-CPAN.
 
