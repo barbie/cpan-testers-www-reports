@@ -1,6 +1,8 @@
 Changes for the CPAN Testers Reports website
 ============================================
 
+        - fixed distribution name in metadata.
+
 3.50    2014-07-17
         - missing prerequisite in META.
 

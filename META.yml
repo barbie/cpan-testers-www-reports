@@ -1,5 +1,5 @@
 --- #YAML:1.0
-name:                CPAN::Testers::WWW::Reports
+name:                CPAN-Testers-WWW-Reports
 version:             3.50
 abstract:            The CPAN Testers Reports website
 author:
