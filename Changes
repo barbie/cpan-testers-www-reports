@@ -1,6 +1,7 @@
 Changes for the CPAN Testers Reports website
 ============================================
 
+3.51    2014-08-16
         - fixed distribution name in metadata.
 
 3.50    2014-07-17
