@@ -25,7 +25,8 @@ Primary Query String parameters are
 
 item * date
 
-Retrieve reports for a specific date.
+Retrieve report data for a specific date. The results of this requests are
+intended to be used to provide a further range request.
 
 item * range
 
