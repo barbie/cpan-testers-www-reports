@@ -2,22 +2,21 @@
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.48';
+$VERSION = '3.53';
 
 #----------------------------------------------------------------------------
 
 =head1 NAME
 
-reports-summary.cgi - program to return graphical status of a CPAN distribution
+pages.cgi - CPAN Testers Reports web application.
 
 =head1 SYNOPSIS
 
-  perl reports-summary.cgi
+  perl pages.cgi
 
 =head1 DESCRIPTION
 
-Called in a CGI context, returns the current reporting statistics for a CPAN
-distribution, depending upon the POST parameters provided.
+Core Reports web application.
 
 =cut
 
