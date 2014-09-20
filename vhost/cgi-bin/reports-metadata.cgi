@@ -19,6 +19,27 @@ reports-metadata.cgi - program to return CPAN Testers report metadata
 Called in a CGI context, returns the current reporting statistics for a CPAN
 distribution, depending upon the parameters provided.
 
+Primary Query String parameters are
+
+=over 4
+
+item * date
+
+Retrieve reports for a specific date.
+
+item * range
+
+Retrieve reports for a set of id ranges, up to a maximum of 2500 reports. 
+
+Ranges can be open ended, such that "range=-10000" retrieves the first 2500 
+reports and "range=10000-" will retrieve reports from the given id to the 
+latest report respective, or the next 2500 as appropriate. Note that "range=-"
+is valid, but will only retrieve the first 2500 reports.
+
+If range is a single id, only that report id is returned, if found.
+
+=back
+
 =cut
 
 # -------------------------------------

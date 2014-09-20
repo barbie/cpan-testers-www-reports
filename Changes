@@ -1,7 +1,8 @@
 Changes for the CPAN Testers Reports website
 ============================================
 
-        - added documentation to reports-summary.cgi.
+        - added documentation to:
+          - reports-summary.cgi, reports-metadata.ci and release-summary.cgi.
         - fixed reports-summary.cgi to correctly reference the format as csv
           instead of txt. Updated templates.
         - fixed regex patterns matching perl development versions.

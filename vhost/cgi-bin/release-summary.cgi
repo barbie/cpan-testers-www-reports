@@ -19,6 +19,95 @@ release-summary.cgi - program to return statistics of a CPAN distribution
 Called in a CGI context, returns the current reporting statistics for a CPAN
 distribution, depending upon the POST parameters provided.
 
+Primary Query String parameters are
+
+=over 4
+
+item * dist
+
+The distribution to provide a summary for. An error will be returned if no
+distribution name is provided.
+
+=back
+
+At least one of these parameters needs to be supplied, otherwise an error will
+be returned.
+
+Secondary optional Query String parameters available are
+
+item * version
+
+Filter based on a specific distribution version. Defaults to the latest 
+version.
+
+item * oncpan
+
+Filter based on whether the distribution is available on CPAN or only BACKPAN.
+Values are:
+
+=over 4
+
+=item * 0 = CPAN and BACKPAN
+=item * 1 = CPAN only
+=item * 2 = BACKPAN only
+
+=back
+
+item * distmat
+
+Filter based on whether the distribution is a developer release or a 
+stable release.
+
+=over 4
+
+=item * 0 = all releases
+=item * 1 = stable releases only
+=item * 2 = development releases only
+
+=back
+
+item * perlmat
+
+Filter based on perl maturity, i.e. whether a development version (5.21.3) or
+a stable version (5.20.1). Values are:
+
+=over 4
+
+=item * 0 = all reports
+=item * 1 = stable versions only
+=item * 2 = development versions only
+
+=back
+
+item * patches
+
+Filter based on whether the perl version is a patch. Values are:
+
+=over 4
+
+=item * 0 = all reports
+=item * 1 = patches only
+=item * 2 = exclude patches
+
+=back
+
+Defaults to all reports.
+
+item * perlver
+
+Filter based on Perl version, e.g. 5.20.1. Defaults to all versions.
+
+item * osname (optional)
+
+Filter based on Operating System name, e.g. MSWin32. Defaults to all Operating 
+Systems.
+
+item * format
+
+Available formats are: 'csv', 'ajax' and 'json'. Defaults to 'csv'.
+
+=back
+
 =cut
 
 # -------------------------------------
@@ -50,7 +139,7 @@ my %rules = (
     patches => qr/^([0-2])$/i,
     perlver => qr/^([\w.]+)$/i,
     osname  => qr/^([\w.]+)$/i,
-    format  => qr/^(text|ajax|json)$/i
+    format  => qr/^(ajax|csv|json)$/i
 );
 
 my $EXCEPTIONS;
