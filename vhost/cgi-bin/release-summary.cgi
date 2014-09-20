@@ -113,14 +113,15 @@ Available formats are: 'csv', 'ajax' and 'json'. Defaults to 'csv'.
 # -------------------------------------
 # Library Modules
 
-use OpenThought();
 use CGI;
 use Config::IniFiles;
 use CPAN::Testers::Common::DBUtils;
-use Template;
-use JSON;
-use IO::File;
 use Data::Dumper;
+use Getopt::Long;
+use IO::File;
+use JSON;
+use OpenThought();
+use Template;
 
 # -------------------------------------
 # Variables
@@ -157,7 +158,21 @@ process_response();
 # Subroutines
 
 sub init_options {
-    $options{config} = $VHOST . 'cgi-bin/config/settings.ini';
+    GetOptions( 
+        \%options,
+        'config=s',
+        'dist=s',
+        'version=s',
+        'oncpan=s',
+        'distmat=s',
+        'perlmat=s',
+        'patches=s',
+        'perlver=s',
+        'osname=s',
+        'format=s'
+    );
+
+    $options{config} ||= $VHOST . 'cgi-bin/config/settings.ini';
 
     error("Must specific the configuration file\n")             unless($options{config});
     error("Configuration file [$options{config}] not found\n")  unless(-f $options{config});

@@ -6,7 +6,8 @@ Changes for the CPAN Testers Reports website
         - fixed reports-summary.cgi to correctly reference the format as csv
           instead of txt. Updated templates.
         - fixed regex patterns matching perl development versions.
-        - added ability to process command line options (reports-summary.cgi).
+        - added ability to process command line options:
+          - reports-summary.cgi, reports-metadata.ci and release-summary.cgi.
         - added JSON support (reports-summary.cgi).
         - author responses now include version for csv, json and xml output 
           (reports-summary.cgi).

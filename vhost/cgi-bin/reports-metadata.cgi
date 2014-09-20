@@ -49,6 +49,7 @@ use CGI;
 use Config::IniFiles;
 use CPAN::Testers::Common::DBUtils;
 use Data::Dumper;
+use Getopt::Long;
 use IO::File;
 use JSON::XS;
 
@@ -80,7 +81,14 @@ writer();
 # Subroutines
 
 sub init_options {
-    $options{config} = $VHOST . 'cgi-bin/config/settings.ini';
+    GetOptions( 
+        \%options,
+        'config=s',
+        'date=s',
+        'range=s'
+    );
+
+    $options{config} ||= $VHOST . 'cgi-bin/config/settings.ini';
 
     error("Must specific the configuration file\n")             unless($options{config});
     error("Configuration file [$options{config}] not found\n")  unless(-f $options{config});
