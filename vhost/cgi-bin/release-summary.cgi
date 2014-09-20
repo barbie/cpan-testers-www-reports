@@ -277,8 +277,6 @@ sub process_dist_long {
     push @where, "(perl LIKE '%patch%' OR perl LIKE '%RC%')"            if($cgiparams{patches} && $cgiparams{patches} == 2);
     push @where, "version NOT LIKE '%\\_%'"     if($cgiparams{distmat} && $cgiparams{distmat} == 1);
     push @where, "version LIKE '%\\_%'"         if($cgiparams{distmat} && $cgiparams{distmat} == 2);
-    #push @where, "perl NOT REGEX '^5.(7|9|11)'" if($cgiparams{perlmat} && $cgiparams{perlmat} == 1);
-    #push @where, "perl REGEX '^5.(7|9|11)'"     if($cgiparams{perlmat} && $cgiparams{perlmat} == 2);
     my $where = @where ? ' AND ' . join(' AND ',@where) : '';
 
     my $dist = "'$cgiparams{dist}'";
@@ -297,8 +295,8 @@ sub process_dist_long {
         #next    if($cgiparams{patches} && $cgiparams{patches} == 2     && $row->{perl}     !~ /(patch|RC)/i);
         #next    if($cgiparams{distmat} && $cgiparams{distmat} == 1     && $row->{version}  =~ /_/i);
         #next    if($cgiparams{distmat} && $cgiparams{distmat} == 2     && $row->{version}  !~ /_/i);
-        next    if($cgiparams{perlmat} && $cgiparams{perlmat} == 1     && $row->{perl}     =~ /^5.(7|9|11)/);
-        next    if($cgiparams{perlmat} && $cgiparams{perlmat} == 2     && $row->{perl}     !~ /^5.(7|9|11)/);
+        next    if($cgiparams{perlmat} && $cgiparams{perlmat} == 1     && $row->{perl}     =~ /^5.(7|9|[1-9][13579])/);
+        next    if($cgiparams{perlmat} && $cgiparams{perlmat} == 2     && $row->{perl}     !~ /^5.(7|9|[1-9][13579])/);
         next    if($cgiparams{perlver} && $cgiparams{perlver} ne 'ALL' && $row->{perl}     !~ /$cgiparams{perlver}/i);
         next    if($cgiparams{osname}  && $cgiparams{osname}  ne 'ALL' && $row->{osname}   !~ /$cgiparams{osname}/i);
 
@@ -331,7 +329,7 @@ sub process_dist_long {
 
 sub process_response {
 
-    audit("DEBUG: results=".Dumper(\%results));
+    #audit("DEBUG: results=".Dumper(\%results));
 
     if($cgiparams{format} eq 'ajax') {
         my $ot = OpenThought->new();
