@@ -88,7 +88,7 @@ sub Create {
                 $cpan->check_oncpan($row->{dist},$row->{version}) ? 1 : 2,
 
                 $row->{version} =~ /_/        ? 2 : 1,
-                $row->{perl} =~ /^5.(7|9|11)/ ? 2 : 1,
+                $row->{perl} =~ /^5.(7|9|[1-9][13579])/ ? 2 : 1,
                 $row->{perl} =~ /patch/       ? 2 : 1,
 
                 $row->{state} eq 'pass'    ? 1 : 0,
