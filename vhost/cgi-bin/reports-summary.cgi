@@ -28,10 +28,44 @@ item * dist (required)
 The distribution to provide a summary for. An error will be returned if no
 distribution name is provided.
 
+item * author (optional)
+
+Filter based on a specific author who released the distribution. Defaults to authors.
+
 item * version (optional)
 
 Filter based on a specific distribution version. Defaults to the latest 
 version.
+
+item * grade (optional)
+
+Filter based on report grade, i.e. 'pass','fail','na' or 'unknown'.
+
+item * oncpan (optional)
+
+Filter based on whether the distribution is available on CPAN or only BACKPAN.
+Values are:
+
+=over 4
+
+=item * 0 = CPAN and BACKPAN
+=item * 1 = CPAN only
+=item * 2 = BACKPAN only
+
+=back
+
+item * distmat (optional)
+
+Filter based on whether the distribution is a developer release or a 
+stable release.
+
+=over 4
+
+=item * 0 = all releases
+=item * 1 = stable releases only
+=item * 2 = development releases only
+
+=back
 
 item * perlmat (optional)
 
@@ -71,7 +105,8 @@ Systems.
 
 item * format (optional)
 
-Available formats are: 'txt', 'html' and 'xml'. Defaults to 'html'.
+Available formats are: 'csv', 'txt', 'html' and 'xml'. Defaults to 'html'.
+'txt' is provided for backwards compatibility, but is mapped to 'csv'.
 
 =back
 
