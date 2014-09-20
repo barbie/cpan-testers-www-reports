@@ -48,7 +48,7 @@ different release versions of that operating system.</p>
 <td><small>[% perl %]</small></td>
 [% FOREACH oses IN builder.stats_oses %]
 [% os = oses | lower %]
-<td[% IF builder.stats.$perl.$os.version %] class="PASS"[% END %]><small>[% builder.stats.$perl.$os.version %]</small></td>
+[% IF builder.stats.$perl.$os.version %]<td class="PASS"><small>[% builder.stats.$perl.$os.version %]</small></td>[% ELSE %]<td></td>[% END %]
 [% END %]
 </tr>
 [% END %]
@@ -63,7 +63,7 @@ different release versions of that operating system.</p>
 <p>To view individual reports, please click the grade text associated with each report.</p>
 
 [% FOREACH version = versions %]
-  <h2><a name="[% versions_tag.$version -%]">[% builder.distribution %] [% version | html %]</a> 
+  <h2 id="[% versions_tag.$version -%]">[% builder.distribution %] [% version | html %]</a> 
   [% IF summary.$version.keys %]
     ([%- FOREACH status = summary.$version.keys.sort -%]
       [%- c = summary.$version.$status -%]
@@ -93,7 +93,7 @@ different release versions of that operating system.</p>
       </tr>
       [% END %]
       [% ELSE %]
-	    <tr><td colspan="6">No reports currently listed.</td></tr>
+	    <tr><td colspan="5">No reports currently listed.</td></tr>
       [% END %]
       </tbody>
     </table>

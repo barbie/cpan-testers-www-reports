@@ -50,7 +50,7 @@
 [% FOREACH item = data %]
 
 [% IF item.password != '-banned-' %]
-    <tr><td><b>[% item.realname %]</b>
+    <tr><td><strong>[% item.realname %]</strong>
             [% IF item.link %]<br /><img src='[% webpath %]/[% item.link %]' alt='[% item.tag %]'/>[% END %]
             [% IF item.nickname %]<br />[% item.nickname %][% END %]
             <br />Posted: [% item.posts %] times

@@ -28,12 +28,12 @@
 
 <p>
 These are the test reports that we have for the most recent versions of each CPAN distribution uploaded by
-[% link %].[% IF processed %] This page was last updated on <b>[% processed %]</b>.[% END %]
+[% link %].[% IF processed %] This page was last updated on <strong>[% processed %]</strong>.[% END %]
 </p>
 
 <noscript>
 <div class="nv">
-<p><b>THIS SITE REQUIRES YOUR BROWSER TO HAVE JAVASCRIPT ENABLED</b></p>
+<p><strong>THIS SITE REQUIRES YOUR BROWSER TO HAVE JAVASCRIPT ENABLED</strong></p>
 <p>Due to the high volume of reports, in order to more easily manage the
 display listings, Javascript is used to filter the reports displayed.</p>
 <p>If you wish to view the static version of this page, please 
@@ -53,10 +53,10 @@ display listings, Javascript is used to filter the reports displayed.</p>
 
 [% FOREACH d = distributions %]
 <div class="[% d.csscurrent %][% d.cssrelease %]">
-<h2><a name="[% d.dist %]" /><a href="/distro/[% d.letter %]/[% d.dist | html %].html">[% d.dist | html %]</a> [% d.version | html %]
+<h2 id="[% d.dist %]"><a href="/distro/[% d.letter %]/[% d.dist | html %].html">[% d.dist | html %]</a> [% d.version | html %]
 
 [% IF d.summary.keys %]
-(<b>
+(<strong>
 [%- FOREACH status = d.summary.keys.sort -%]
 [%- c = d.summary.$status -%]
 <span class="[% status | html %]">[% c %] [% status -%]
@@ -65,7 +65,7 @@ display listings, Javascript is used to filter the reports displayed.</p>
 [% END -%]
 [% UNLESS loop.last %], [% END -%]
 </span>[% -%]
-[% END -%]</b>)
+[% END -%]</strong>)
 [% ELSE %] (No reports)[% END -%]</h2>
 
 [% IF d.reports %]
@@ -81,7 +81,7 @@ display listings, Javascript is used to filter the reports displayed.</p>
         </tr>
       </thead>
       <tbody id="data-[% d.dist %]">
-	  <tr><td colspan="6">Data loading please wait ....</td></tr>
+	  <tr><td colspan="5">Data loading please wait ....</td></tr>
       </tbody>
     </table>
 

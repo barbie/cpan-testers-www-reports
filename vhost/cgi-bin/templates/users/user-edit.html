@@ -26,11 +26,11 @@ tinyMCE.init({
 [% IF thanks %]<p>[% thanks %][% END %]
 <p>Fields marked * are mandatory fields and must be completed.
 <p>
-<b>Please take the time to complete your details, as it helps others to identify you, especially if
+<strong>Please take the time to complete your details, as it helps others to identify you, especially if
 you're able to coming along to any of The Scooter Dos in person. that other attendees know who you
 are. Note that only the details as seen in the preview box at the bottom of the page, will be
 visible on the website.
-</b></div>
+</strong></div>
 
 <form method="post" action="[% cgipath %]/pages.cgi">
 <input type="hidden" name="act" value="user-pass" />
@@ -90,7 +90,7 @@ visible on the website.
 
 <div class="box">
     <table width="100%">
-    <tr><td><b>[% preview.realname %]</b>
+    <tr><td><strong>[% preview.realname %]</strong>
             [% IF preview.link %]<br /><img src='[% webpath %]/[% preview.link %]' alt='[% preview.tag %]'/>[% END %]
             [% IF preview.nickname %]<br />[% preview.nickname %][% END %]
             <br />Posted: [% userposts %] times

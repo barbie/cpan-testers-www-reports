@@ -33,7 +33,7 @@ different release versions of that operating system.</p>
 <tr>
 <td><small>[% perl %]</small></td>
 [% FOREACH os IN builder.stats_oses %]
-<td[% IF builder.stats.$perl.$os.version %] class="PASS"[% END %]><small>[% builder.stats.$perl.$os.version %]</small></td>
+[% IF builder.stats.$perl.$os.version %]<td class="PASS"><small>[% builder.stats.$perl.$os.version %]</small></td>[% ELSE %]<td></td>[% END %]
 [% END %]
 </tr>
 [% END %]
@@ -62,7 +62,7 @@ not just the current one.</p>
     <tr>
     <td><small>[% perl %]</small></td>
     [% FOREACH os IN builder.stats_oses %]
-    <td[% IF builder.stats.$perl.$os.count %] class="PASS"[% END %]><small>[% builder.stats.$perl.$os.count %]</small></td>
+    [% IF builder.stats.$perl.$os.count %]<td class="PASS"><small>[% builder.stats.$perl.$os.count %]</small></td>[% ELSE %]<td></td>[% END %]
     [% END %]
     </tr>
   [% END %]

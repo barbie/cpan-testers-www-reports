@@ -25,7 +25,7 @@
 
 <p>
 These are the test reports that we have for the most recent versions of each CPAN distribution uploaded by
-[% link %].[% IF processed %] This page was last updated on <b>[% processed %]</b>.[% END %]
+[% link %].[% IF processed %] This page was last updated on <strong>[% processed %]</strong>.[% END %]
 </p>
 
 <h2>The Latest Distributions</h2>
@@ -34,10 +34,10 @@ These are the test reports that we have for the most recent versions of each CPA
 
 [% FOREACH d = builder.distributions %]
 <div class="[% d.csscurrent %][% d.cssrelease %]">
-<h2><a name="[% d.dist %]" /><a href="/distro/[% d.letter %]/[% d.dist | html %].html">[% d.dist | html %]</a> [% d.version | html %]
+<h2 id="[% d.dist %]"><a href="/distro/[% d.letter %]/[% d.dist | html %].html">[% d.dist | html %]</a> [% d.version | html %]
 
 [% IF d.summary.keys %]
-(<b>
+(<strong>
 [%- FOREACH status = d.summary.keys.sort -%]
 [%- c = d.summary.$status -%]
 <span class="[% status | html %]">[% c %] [% status -%]
@@ -46,7 +46,7 @@ These are the test reports that we have for the most recent versions of each CPA
 [% END -%]
 [% UNLESS loop.last %], [% END -%]
 </span>[% -%]
-[% END -%]</b>)
+[% END -%]</strong>)
 [% ELSE %] (No reports)[% END -%]</h2>
 
 [% IF d.reports %]

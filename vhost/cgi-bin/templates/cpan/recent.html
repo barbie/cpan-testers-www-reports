@@ -28,7 +28,7 @@
       <tbody id="report_data">
   [% FOREACH report = recent %]
 	  <tr><td class="[% report.status | html %]"><a rel="nofollow" href="[% reportlink2 %]/[% report.guid || report.id %]">[% report.status | html %]</a></td>
-	      <td><b><a href="/distro/[% report.dist.substr(0,1) %]/[% report.dist %].html">[% report.dist %]</a></b></td>
+	      <td><strong><a href="/distro/[% report.dist.substr(0,1) %]/[% report.dist %].html">[% report.dist %]</a></strong></td>
 	      <td>[% report.version %]</td>
 	      <td>[% report.perl | html %]</td>
 	      <td>[% report.osname | ucfirst | html %]</td>
