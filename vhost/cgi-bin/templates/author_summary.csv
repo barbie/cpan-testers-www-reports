@@ -1,7 +1,7 @@
 [% IF distributions %]
 [% FOREACH d = distributions %]
 [%- s = d.summary -%]
-[% d.distribution %],[%- s.ALL || 0 -%],[%- s.PASS || 0 -%],[%- s.FAIL || 0 -%],[%- s.NA || 0 -%],[%- s.UNKNOWN || 0 -%]
+[% d.distribution %],[%- s.version -%],[%- s.ALL || 0 -%],[%- s.PASS || 0 -%],[%- s.FAIL || 0 -%],[%- s.NA || 0 -%],[%- s.UNKNOWN || 0 -%]
 
 [% END %]
 [% END %]

@@ -446,7 +446,7 @@ sub process_author_short {
         $summary{ $row->{dist} }->{ ALL }     = 0;
     }
 
-    $sql =  'SELECT x.dist,sum(s.pass) as pass,sum(s.fail) as fail,sum(s.na) as na,sum(s.unknown) as unknown ' .
+    $sql =  'SELECT x.dist,x.version,sum(s.pass) as pass,sum(s.fail) as fail,sum(s.na) as na,sum(s.unknown) as unknown ' .
             'FROM ixlatest AS x ' .
             'LEFT JOIN release_summary AS s ON x.dist=s.dist AND x.version=s.version ' .
             "WHERE x.author=? AND s.version IS NOT NULL AND s.version!='' $where " .
@@ -465,6 +465,7 @@ sub process_author_short {
         next    unless($row->{dist} =~ /^[A-Za-z0-9][A-Za-z0-9\-_]*$/
                     || $row->{dist} =~ /$EXCEPTIONS/);
 
+        $summary{ $row->{dist} }->{ version }  = $row->{version};
         $summary{ $row->{dist} }->{ PASS }    += $row->{pass};
         $summary{ $row->{dist} }->{ FAIL }    += $row->{fail};
         $summary{ $row->{dist} }->{ NA }      += $row->{na};
@@ -507,7 +508,7 @@ sub process_author_long {
     push @where, "c.version LIKE '%\\_%'"           if($cgiparams{distmat} && $cgiparams{distmat} == 2);
     my $where = @where ? ' AND ' . join(' AND ',@where) : '';
 
-    my $sql =   'SELECT c.dist,c.state,c.perl,c.osname FROM cpanstats AS c ' .
+    my $sql =   'SELECT c.dist,c.state,c.perl,c.osname,c.version FROM cpanstats AS c ' .
                 'INNER JOIN ixlatest AS x ON x.dist=c.dist AND x.version=c.version ' .
                 'INNER JOIN uploads AS u ON u.dist=x.dist AND u.version=x.version ' .
                 "WHERE x.author=? $where ORDER BY id";
@@ -536,6 +537,7 @@ sub process_author_long {
         next    if($cgiparams{perlver} && $cgiparams{perlver} ne 'ALL' && $row->{perl}     !~ /$cgiparams{perlver}/i);
         next    if($cgiparams{osname}  && $cgiparams{osname}  ne 'ALL' && $row->{osname}   !~ /$cgiparams{osname}/i);
 
+        $summary{$row->{dist}}->{ version } = $row->{version};
         $summary{$row->{dist}}->{ uc $row->{state} }++;
         $summary{$row->{dist}}->{ 'ALL' }++;
     }
