@@ -19,29 +19,36 @@ reports-summary.cgi - program to return graphical status of a CPAN distribution
 Called in a CGI context, returns the current reporting statistics for a CPAN
 distribution, depending upon the POST parameters provided.
 
-Available Query String parameters are
+Primary Query String parameters are
 
 =over 4
 
-item * dist (required)
+item * dist
 
 The distribution to provide a summary for. An error will be returned if no
 distribution name is provided.
 
-item * author (optional)
+item * author
 
 Filter based on a specific author who released the distribution. Defaults to authors.
 
-item * version (optional)
+=back
+
+At least one of these parameters needs to be supplied, otherwise an error will
+be returned.
+
+Secondary optional Query String parameters available are
+
+item * version
 
 Filter based on a specific distribution version. Defaults to the latest 
 version.
 
-item * grade (optional)
+item * grade
 
 Filter based on report grade, i.e. 'pass','fail','na' or 'unknown'.
 
-item * oncpan (optional)
+item * oncpan
 
 Filter based on whether the distribution is available on CPAN or only BACKPAN.
 Values are:
@@ -54,7 +61,7 @@ Values are:
 
 =back
 
-item * distmat (optional)
+item * distmat
 
 Filter based on whether the distribution is a developer release or a 
 stable release.
@@ -67,7 +74,7 @@ stable release.
 
 =back
 
-item * perlmat (optional)
+item * perlmat
 
 Filter based on perl maturity, i.e. whether a development version (5.21.3) or
 a stable version (5.20.1). Values are:
@@ -80,7 +87,7 @@ a stable version (5.20.1). Values are:
 
 =back
 
-item * patches (optional)
+item * patches
 
 Filter based on whether the perl version is a patch. Values are:
 
@@ -94,7 +101,7 @@ Filter based on whether the perl version is a patch. Values are:
 
 Defaults to all reports.
 
-item * perlver (optional)
+item * perlver
 
 Filter based on Perl version, e.g. 5.20.1. Defaults to all versions.
 
@@ -103,7 +110,7 @@ item * osname (optional)
 Filter based on Operating System name, e.g. MSWin32. Defaults to all Operating 
 Systems.
 
-item * format (optional)
+item * format
 
 Available formats are: 'csv', 'txt', 'html' and 'xml'. Defaults to 'html'.
 'txt' is provided for backwards compatibility, but is mapped to 'csv'.
@@ -115,14 +122,14 @@ Available formats are: 'csv', 'txt', 'html' and 'xml'. Defaults to 'html'.
 # -------------------------------------
 # Library Modules
 
-use OpenThought();
 use CGI;
 use Config::IniFiles;
 use CPAN::Testers::Common::DBUtils;
-use Template;
-
-use IO::File;
 use Data::Dumper;
+use Getopt::Long;
+use IO::File;
+use OpenThought();
+use Template;
 
 # -------------------------------------
 # Variables
@@ -162,7 +169,23 @@ writer();
 # Subroutines
 
 sub init_options {
-    $options{config} = $VHOST . 'cgi-bin/config/settings.ini';
+    GetOptions( 
+        \%options,
+        'config=s',
+        'dist=s',
+        'author=s',
+        'version=s',
+        'grade=s',
+        'oncpan=s',
+        'distmat=s',
+        'perlmat=s',
+        'patches=s',
+        'perlver=s',
+        'osname=s',
+        'format=s'
+    );
+
+    $options{config} ||= $VHOST . 'cgi-bin/config/settings.ini';
 
     error("Must specific the configuration file\n")             unless($options{config});
     error("Configuration file [$options{config}] not found\n")  unless(-f $options{config});
@@ -179,14 +202,14 @@ sub init_options {
 
     $cgi = CGI->new;
 
-    $options{format} = $cgi->param('format') || 'html';
+    $options{format} ||= $cgi->param('format') || 'html';
     $options{format} = 'html' unless($options{format} =~ /html|txt|xml|csv/);
     $options{format} = 'csv'  if($options{format} =~ /txt/);
 
     #audit("DEBUG: configuration done");
 
     for my $key (keys %rules) {
-        my $val = $cgi->param("${key}_pref") || $cgi->param($key);
+        my $val = $options{$key} || $cgi->param("${key}_pref") || $cgi->param($key);
         $cgiparams{$key} = $1   if($val =~ $rules{$key});
     }
 
@@ -242,6 +265,10 @@ sub process_dist {
 sub process_dist_short {
     #audit("DEBUG: start process dist (short): $cgiparams{dist}");
 
+    %output = (
+        template  => 'dist_summary',
+    );
+
     my @where;
     push @where, "patched=$cgiparams{patches}"      if($cgiparams{patches});
     push @where, "distmat=$cgiparams{distmat}"      if($cgiparams{distmat});
@@ -269,6 +296,8 @@ sub process_dist_short {
         $summary->{ $row->{version} }->{ UNKNOWN } = $row->{unknown};
         $summary->{ $row->{version} }->{ ALL }     = $row->{pass} + $row->{fail} + $row->{na} + $row->{unknown};
     }
+
+    return  unless(keys %$summary);
 
     #audit("DEBUG: summary=".Dumper($summary));
 
@@ -309,6 +338,10 @@ sub process_dist_short {
 sub process_dist_long {
     #audit("DEBUG: start process dist (long): $cgiparams{dist}");
 
+    %output = (
+        template  => 'dist_summary',
+    );
+
     my @where;
     push @where, "perl NOT LIKE '%patch%'"          if($cgiparams{patches} && $cgiparams{patches} == 1);
     push @where, "perl LIKE '%patch%'"              if($cgiparams{patches} && $cgiparams{patches} == 2);
@@ -341,6 +374,8 @@ sub process_dist_long {
         $summary->{ $row->{version} }->{ uc $row->{state} }++;
         $summary->{ $row->{version} }->{ 'ALL' }++;
     }
+
+    return  unless(keys %$summary);
 
     #audit("DEBUG: summary=".Dumper($summary));
 
@@ -387,6 +422,10 @@ sub process_author_short {
     #audit("DEBUG: start process author (short): $cgiparams{author}");
     my (@dists,%summary);
 
+    %output = (
+        template  => 'author_summary',
+    );
+
     my @where;
     push @where, "s.patched=$cgiparams{patches}"      if($cgiparams{patches});
     push @where, "s.distmat=$cgiparams{distmat}"      if($cgiparams{distmat});
@@ -396,6 +435,9 @@ sub process_author_short {
 
     my $sql =   q{SELECT x.dist FROM ixlatest AS x WHERE x.author=? AND x.version IS NOT NULL AND x.version!=''};
     my @rows = $options{CPANSTATS}->get_query('hash', $sql, $cgiparams{author} );
+
+    return  unless(@rows);
+
     for my $row (@rows) {
         $summary{ $row->{dist} }->{ PASS }    = 0;
         $summary{ $row->{dist} }->{ FAIL }    = 0;
@@ -452,6 +494,10 @@ sub process_author_long {
     #audit("DEBUG: start process author: $cgiparams{author}");
     my (@dists,%summary);
 
+    %output = (
+        template  => 'author_summary',
+    );
+
     my @where;
     push @where, "u.type != 'backpan'"              if($cgiparams{oncpan}  && $cgiparams{oncpan}  == 1);
     push @where, "u.type = 'backpan'"               if($cgiparams{oncpan}  && $cgiparams{oncpan}  == 2);
@@ -471,6 +517,8 @@ sub process_author_long {
     #my $next = $options{CPANSTATS}->iterator('hash', $sql, $cgiparams{author} );
     my @rows = $options{CPANSTATS}->get_query('hash', $sql, $cgiparams{author} );
     #audit("DEBUG: rows=".(scalar(@rows)));
+
+    return  unless(@rows);
 
     my $inx = 0;
     my $max = 0;#scalar(@rows);
@@ -512,6 +560,8 @@ sub process_author_long {
 
 sub writer {
     my $result;
+
+    #audit("DEBUG: output=" . Dumper(\%output));
 
     my $template = $output{template} . '.' . $options{format};
     unless(-f "templates/$template") {
