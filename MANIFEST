@@ -50,8 +50,9 @@ vhost/cgi-bin/templates/articles/arts-block.html
 vhost/cgi-bin/templates/articles/arts-failure.html
 vhost/cgi-bin/templates/articles/arts-item.html
 vhost/cgi-bin/templates/articles/arts-preview.html
-vhost/cgi-bin/templates/author_summary.html
 vhost/cgi-bin/templates/author_summary.csv
+vhost/cgi-bin/templates/author_summary.html
+vhost/cgi-bin/templates/author_summary.json
 vhost/cgi-bin/templates/author_summary.xml
 vhost/cgi-bin/templates/content/status.html
 vhost/cgi-bin/templates/content/welcome.html
@@ -79,8 +80,9 @@ vhost/cgi-bin/templates/cpan/stats-index.html
 vhost/cgi-bin/templates/cpan/stats-perl-platform-count.html
 vhost/cgi-bin/templates/cpan/stats-perl-platform.html
 vhost/cgi-bin/templates/cpan/stats-perl-version.html
-vhost/cgi-bin/templates/dist_summary.html
 vhost/cgi-bin/templates/dist_summary.csv
+vhost/cgi-bin/templates/dist_summary.html
+vhost/cgi-bin/templates/dist_summary.json
 vhost/cgi-bin/templates/dist_summary.xml
 vhost/cgi-bin/templates/hits/hits_admin.html
 vhost/cgi-bin/templates/images/image-edit.html

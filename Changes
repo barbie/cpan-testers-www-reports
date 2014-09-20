@@ -6,6 +6,7 @@ Changes for the CPAN Testers Reports website
           instead of txt. Updated templates.
         - fixed regex patterns matching perl development versions.
         - added ability to process command line options (reports-summary.cgi).
+        - added JSON support (reports-summary.cgi).
 
 3.52    2014-09-20
         - fixed license fields in META.json to be lists.

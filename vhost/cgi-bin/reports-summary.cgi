@@ -203,7 +203,7 @@ sub init_options {
     $cgi = CGI->new;
 
     $options{format} ||= $cgi->param('format') || 'html';
-    $options{format} = 'html' unless($options{format} =~ /html|txt|xml|csv/);
+    $options{format} = 'html' unless($options{format} =~ /html|txt|xml|csv|json/);
     $options{format} = 'csv'  if($options{format} =~ /txt/);
 
     #audit("DEBUG: configuration done");
@@ -581,6 +581,8 @@ sub writer {
         print $cgi->header('text/xml') . $result . "\n";
     } elsif($options{format} eq 'csv') {
         print $cgi->header('text/text') . $result . "\n";
+    } elsif($options{format} eq 'json') {
+        print $cgi->header('application/json') . $result . "\n";
     } else {
         $OT = OpenThought->new();
 
