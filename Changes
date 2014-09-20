@@ -9,6 +9,7 @@ Changes for the CPAN Testers Reports website
         - added JSON support (reports-summary.cgi).
         - author responses now include version for csv, json and xml output 
           (reports-summary.cgi).
+        - fixed content type & disposition in return headers.
 
 3.52    2014-09-20
         - fixed license fields in META.json to be lists.

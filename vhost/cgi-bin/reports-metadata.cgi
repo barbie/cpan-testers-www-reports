@@ -156,7 +156,7 @@ sub writer {
     #audit("DEBUG: data=" . $data ? 'YES' : 'NO');
     #audit("DEBUG: data=$data");
 
-    print $cgi->header('text/plain') . $data . "\n";
+    print $cgi->header('application/json') . $data . "\n";
 }
 
 sub error {

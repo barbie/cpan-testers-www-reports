@@ -273,7 +273,7 @@ sub process_response {
         print $ot->response();
         print "\n";
     } elsif($cgiparams{format} eq 'json') {
-        print "Content-Type: text/xml; charset=ISO-8859-1\n";
+        print "Content-Type: application/json; charset=ISO-8859-1\n";
         print "Cache-Control: no-cache\n\n";
         if(%results) {
             my @json;
@@ -285,8 +285,9 @@ sub process_response {
         }
 
     } elsif(%results) {
-        print( "Content-Type: text/text; charset=ISO-8859-1\n" );
-        print( "Cache-Control: no-cache\n\n" );
+        print( qq{Content-Type: text/csv; charset=ISO-8859-1\n} );
+        print( qq{Content-Disposition: attachment; filename="release-summary.csv"\n} );
+        print( qq{Cache-Control: no-cache\n\n} );
         if(%results) {
             for my $vers (@{$results{versions}}) {
                 printf "%s,%d,%d,%d,%d,%d\n", $vers, map {$results{summary}{$vers}{uc $_}} qw(pass fail na unknown all);
