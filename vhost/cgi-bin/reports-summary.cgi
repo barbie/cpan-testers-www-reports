@@ -19,6 +19,62 @@ reports-summary.cgi - program to return graphical status of a CPAN distribution
 Called in a CGI context, returns the current reporting statistics for a CPAN
 distribution, depending upon the POST parameters provided.
 
+Available Query String parameters are
+
+=over 4
+
+item * dist (required)
+
+The distribution to provide a summary for. An error will be returned if no
+distribution name is provided.
+
+item * version (optional)
+
+Filter based on a specific distribution version. Defaults to the latest 
+version.
+
+item * perlmat (optional)
+
+Filter based on perl maturity, i.e. whether a development version (5.21.3) or
+a stable version (5.20.1). Values are:
+
+=over 4
+
+=item * 0 = all reports
+=item * 1 = stable versions only
+=item * 2 = development versions only
+
+=back
+
+item * patches (optional)
+
+Filter based on whether the perl version is a patch. Values are:
+
+=over 4
+
+=item * 0 = all reports
+=item * 1 = patches only
+=item * 2 = exclude patches
+
+=back
+
+Defaults to all reports.
+
+item * perlver (optional)
+
+Filter based on Perl version, e.g. 5.20.1. Defaults to all versions.
+
+item * osname (optional)
+
+Filter based on Operating System name, e.g. MSWin32. Defaults to all Operating 
+Systems.
+
+item * format (optional)
+
+Available formats are: 'txt', 'html' and 'xml'. Defaults to 'html'.
+
+=back
+
 =cut
 
 # -------------------------------------
