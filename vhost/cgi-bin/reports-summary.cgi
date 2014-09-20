@@ -582,7 +582,7 @@ sub writer {
     if($options{format} eq 'xml') {
         print $cgi->header('text/xml') . $result . "\n";
     } elsif($options{format} eq 'csv') {
-        print $cgi->header('text/text') . $result . "\n";
+        print $cgi->header(-type => 'text/csv', -attachment => "report-summary.csv") . $result . "\n";
     } elsif($options{format} eq 'json') {
         print $cgi->header('application/json') . $result . "\n";
     } else {
