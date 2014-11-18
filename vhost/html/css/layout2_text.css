@@ -205,6 +205,10 @@ p.caption {clear:both; margin:0.5em 0 2.0em 20px; text-align:left; color:rgb(80,
 .nav0 li.green a {color:#fff;}
 .nav0 li.green a:hover {color:#00ee00;}
 
+.nav0 li.red {border-right:5px solid #FD0E35;border-left:2px solid #000;}
+.nav0 li.red a {color:#fff;}
+.nav0 li.red a:hover {color:#FD0E35;}
+
 .nav0 li.teal {border-right:5px solid #008080;border-left:2px solid #000;}
 .nav0 li.teal a {color:#fff;}
 .nav0 li.teal a:hover {color:#008080;}
