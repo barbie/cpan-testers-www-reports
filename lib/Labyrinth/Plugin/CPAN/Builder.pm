@@ -267,8 +267,11 @@ sub RemovePages {
     }
 }
 
+# note $name is NOT the author name, but the dist name! need to get the reports to track version and then author
+
 sub RemoveAuthorPages {
     my ($cpan,$dbi,$progress,$name) = @_;
+    my (%remove,%author,@reports);
 
     # get ids from the page requests
     my @requests = $dbi->GetQuery('hash','GetRequestIDs',{names => $name},'rmauth');
@@ -277,66 +280,61 @@ sub RemoveAuthorPages {
     return  unless(keys %requests);
     push my @ids, keys %requests;
 
-    # map current
-    my @dists = $dbi->GetQuery('hash','GetAuthorDists',$name);
-    return  unless(@dists);
-    my %dists = map {$_->{dist} => $_->{version}} @dists;
-
-    my $cache = sprintf "%s/static/author/%s", $settings{webdir}, substr($name,0,1);
-    my $destfile = "$cache/$name.json";
-
-    # get reports
-    my (%remove,@reports);
     my $next = $dbi->Iterator('hash','GetReportsByIDs',{ids=>join(',',@ids)});
     while(my $row = $next->()) {
-        next    unless($dists{$row->{dist}} && $row->{version});
-        next    if($dists{$row->{dist}} ne $row->{version});    # ensure this is the latest dist version
-
-        # hash of dist => summary => PASS, FAIL, NA, UNKNOWN
+        my @latest = $dbi->GetQuery('hash','CheckLatest',$row->{dist}},$row->{version});
+        next    unless(@latest);
+        $author{$latest[0]->{author}}++;
         $remove{$row->{dist}}{uc $row->{state}}++;
     }
 
-    # clean the summary, if we have one
-    my @summary = $dbi->GetQuery('hash','GetAuthorSummary',$name);
-    if(@summary) {
-        my $dataset = decode_json($summary[0]->{dataset});
+    for my $author (keys %author) {
+        my $cache = sprintf "%s/static/author/%s", $settings{webdir}, substr($author,0,1);
+        my $destfile = "$cache/$author.json";
 
-        for my $data ( @{ $dataset->{distributions} } ) {
-            my $dist = $data->{dist};
-            my $summ = $data->{summary};
+        # load JSON, if we have one
+        if(-f $destfile) {
+            my $data  = read_file($destfile);
+            my $store;
+            eval { $store = decode_json($data) };
+            if(!$@ && $store) {
+                for my $row (@$store) {
+                    next    if($requests{$row->{id}});                      # filter out requests
 
-            next    unless($remove{$dist});
-
-            for my $state (keys %{ $remove{$dist} }) {
-                $summ->{ $state } -= $remove{$dist}{$state};
-                $summ->{ 'ALL'  } -= $remove{$dist}{$state};
+                    push @reports, $row;
+                }
             }
+            overwrite_file( $destfile, _make_json( \@reports ) );
         }
 
-        $dbi->DoQuery('UpdateAuthorSummary',$summary[0]->{lastid},$dataset,$name);
-    }
+        # clean the summary, if we have one
+        my @summary = $dbi->GetQuery('hash','GetAuthorSummary',$author);
+        if(@summary) {
+            my $dataset = decode_json($summary[0]->{dataset});
 
-    # load JSON, if we have one
-    if(-f $destfile) {
-        my $data  = read_file($destfile);
-        my $store;
-        eval { $store = decode_json($data) };
-        if(!$@ && $store) {
-            for my $row (@$store) {
-                next    if($dists{$row->{dist}} ne $row->{version});    # ensure this is the latest dist version
-                next    if($requests{$row->{id}});                      # filter out requests
+            for my $data ( @{ $dataset->{distributions} } ) {
+                my $dist = $data->{dist};
+                my $summ = $data->{summary};
 
-                push @reports, $row;
+                next    unless($remove{$dist});
+
+                for my $state (keys %{ $remove{$dist} }) {
+                    $summ->{ $state } -= $remove{$dist}{$state};
+                    $summ->{ 'ALL'  } -= $remove{$dist}{$state};
+                }
             }
+
+            $dbi->DoQuery('UpdateAuthorSummary',$summary[0]->{lastid},$dataset,$author);
         }
-        overwrite_file( $destfile, _make_json( \@reports ) );
     }
 
     # remove requests
     $dbi->DoQuery('DeletePageRequests',{ids => join(',',@ids)},'rmauth',$name);
 
     # push in author queue to rebuild pages
-    $dbi->DoQuery('PushAuthor',$name);
+    $dbi->DoQuery('PushAuthor',$author);
+
+    return scalar(@ids);
 }
 
 sub RemoveDistroPages {
@@ -409,6 +407,8 @@ sub RemoveDistroPages {
 
     # push in author queue to rebuild pages
     $dbi->DoQuery('PushDistro',$name);
+
+    return scalar(@ids);
 }
 
 # - build author pages
