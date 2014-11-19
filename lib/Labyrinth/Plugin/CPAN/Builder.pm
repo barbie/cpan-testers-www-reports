@@ -282,7 +282,7 @@ sub RemoveAuthorPages {
 
     my $next = $dbi->Iterator('hash','GetReportsByIDs',{ids=>join(',',@ids)});
     while(my $row = $next->()) {
-        my @latest = $dbi->GetQuery('hash','CheckLatest',$row->{dist}},$row->{version});
+        my @latest = $dbi->GetQuery('hash','CheckLatest',$row->{dist},$row->{version});
         next    unless(@latest);
         $author{$latest[0]->{author}}++;
         $remove{$row->{dist}}{uc $row->{state}}++;
@@ -326,13 +326,13 @@ sub RemoveAuthorPages {
 
             $dbi->DoQuery('UpdateAuthorSummary',$summary[0]->{lastid},$dataset,$author);
         }
+
+        # push in author queue to rebuild pages
+        $dbi->DoQuery('PushAuthor',$author);
     }
 
     # remove requests
     $dbi->DoQuery('DeletePageRequests',{ids => join(',',@ids)},'rmauth',$name);
-
-    # push in author queue to rebuild pages
-    $dbi->DoQuery('PushAuthor',$author);
 
     return scalar(@ids);
 }
