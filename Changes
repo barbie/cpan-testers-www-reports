@@ -1,6 +1,7 @@
 Changes for the CPAN Testers Reports website
 ============================================
 
+3.55    2014-12-03
         - upgrade to Labyrinth-5.27.
         - upgrade to Labyrinth-Plugin-Core-5.18.
         - fixed RemoveAuthorPages as $name was the dist not the author name.
