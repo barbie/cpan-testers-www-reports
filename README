@@ -78,14 +78,14 @@ Miss Barbell Productions, L<http://www.missbarbell.co.uk/>
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2008-2014 Barbie for Miss Barbell Productions.
+Copyright (C) 2008-2015 Barbie for Miss Barbell Productions.
 
 This distribution is free software; you can redistribute it and/or modify it 
 under the Artistic License v2.
 
 ADDITIONAL COPYRIGHT
 
-This distribution includes TonyMCE [1], a Javascript WYSIWYG Editor used within
+This distribution includes TinyMCE [1], a Javascript WYSIWYG Editor used within
 the site. TinyMCE is distributed under the GNU Lesser General Public License
 Version 2.1, and all files within the './vhost/html/js/tiny_mce' directory
 are copyright of the TinyMCE project.
