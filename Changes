@@ -2,6 +2,7 @@ Changes for the CPAN Testers Reports website
 ============================================
 
         - added Admin site links.
+        - removed Perl promotions links.
 
 3.55    2014-12-03
         - upgrade to Labyrinth-5.27.
