@@ -3,6 +3,7 @@ Changes for the CPAN Testers Reports website
 
         - fixes from live.
         - updated quotation.
+        - added debug lines to view-report.cgi.
 
 3.56    2015-02-11
         - added Admin site links.

@@ -62,7 +62,7 @@ use Metabase::Resource::metabase::user;
 # -------------------------------------
 # Variables
 
-my $DEBUG = 0;
+my $AUDIT = 0;
 my $LONG_ALLOWED = 0;
 
 my $VHOST = '/var/www/reports/';
@@ -82,6 +82,8 @@ process_report();
 # Subroutines
 
 sub init_options {
+    audit("AUDIT[$$]: start init_options");
+
     $options{config} = $VHOST . 'cgi-bin/config/settings.ini';
 
     error("Must specific the configuration file\n")             unless($options{config});
@@ -121,11 +123,16 @@ sub init_options {
 #    }
 
     LogDebug('DEBUG: cgiparams=',Dumper(\%cgiparams));
+    audit("AUDIT[$$]: stop init_options");
 }
 
 sub process_report {
+    audit("AUDIT[$$]: start retrieve_report - $cgiparams{id}");
     retrieve_report();
+    audit("AUDIT[$$]: stop retrieve_report");
+    audit("AUDIT[$$]: start print_report");
     print_report();
+    audit("AUDIT[$$]: stop print_report");
 }
 
 sub retrieve_report {
@@ -417,6 +424,17 @@ sub error {
     print STDERR @_;
     print $cgi->header('text/plain'), "Error retrieving data\n";
     exit;
+}
+
+sub audit {
+    return  unless($AUDIT);
+
+    my @date = localtime(time);
+    my $date = sprintf "%04d/%02d/%02d %02d:%02d:%02d", $date[5]+1900, $date[4]+1, $date[3], $date[2], $date[1], $date[0];
+
+    my $fh = IO::File->new($VHOST . 'cgi-bin/cache/view-report-audit.log','a+') or return;
+    print $fh "$date " . join(' ',@_ ). "\n";
+    $fh->close;
 }
 
 1;
