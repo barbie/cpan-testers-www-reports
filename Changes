@@ -1,6 +1,7 @@
 Changes for the CPAN Testers Reports website
 ============================================
 
+3.57    2015-08-16
         - fixes from live.
         - updated quotation.
         - added debug lines to view-report.cgi.

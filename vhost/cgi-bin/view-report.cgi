@@ -2,7 +2,7 @@
 use strict;
 $|++;
 
-my $VERSION = '3.49';
+my $VERSION = '3.57';
 
 #----------------------------------------------------------------------------
 
@@ -469,7 +469,7 @@ F<http://blog.cpantesters.org/>
 
 =head1 COPYRIGHT AND LICENSE
 
-  Copyright (C) 2008-2014 Barbie <barbie@cpan.org>
+  Copyright (C) 2008-2015 Barbie <barbie@cpan.org>
 
   This module is free software; you can redistribute it and/or
   modify it under the Artistic License 2.0.
