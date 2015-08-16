@@ -310,6 +310,7 @@ sub RemoveAuthorPages {
         # clean the summary, if we have one
         my @summary = $dbi->GetQuery('hash','GetAuthorSummary',$author);
         if(@summary) {
+            $progress->( ".. processing rmauth $author $name" )     if(defined $progress);
             my $dataset = decode_json($summary[0]->{dataset});
 
             for my $data ( @{ $dataset->{distributions} } ) {
@@ -324,7 +325,7 @@ sub RemoveAuthorPages {
                 }
             }
 
-            $dbi->DoQuery('UpdateAuthorSummary',$summary[0]->{lastid},$dataset,$author);
+            $dbi->DoQuery('UpdateAuthorSummary',$summary[0]->{lastid},encode_json($dataset),$author);
         }
 
         # push in author queue to rebuild pages
