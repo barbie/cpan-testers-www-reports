@@ -1,6 +1,8 @@
 Changes for the CPAN Testers Reports website
 ============================================
 
+        - updated Release code to use new distribution indices.
+
 3.57    2015-08-16
         - fixes from live.
         - updated quotation.
