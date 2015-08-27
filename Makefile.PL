@@ -15,11 +15,11 @@ WriteMakefile(
     PREREQ_PM           => {
 
         # Labyrinth Modules
-        'Labyrinth'                         => '5.27',
+        'Labyrinth'                         => '5.32',
         'Labyrinth::DIUtils::ImageMagick'   => '5.04',
-        'Labyrinth::Plugin::Core'           => '5.18',
-        'Labyrinth::Plugin::Requests'       => '1.00',
-        'Labyrinth::Plugin::CPAN'           => '3.50',
+        'Labyrinth::Plugin::Core'           => '5.19',
+        'Labyrinth::Plugin::Requests'       => '1.08',
+        'Labyrinth::Plugin::CPAN'           => '3.54',
 
         # Perl Core Modules
         'CGI'                               => 0,
