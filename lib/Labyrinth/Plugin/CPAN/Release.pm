@@ -96,7 +96,7 @@ sub Create {
                 $row->{state} eq 'na'      ? 1 : 0,
                 $row->{state} eq 'unknown' ? 1 : 0,
 
-                $cpan->DistIndex($row->{dist},$row->{version});
+                $cpan->DistIndex($row->{dist},$row->{version}));
 
                 $changes++;
         }
