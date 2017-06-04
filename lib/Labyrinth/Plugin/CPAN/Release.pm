@@ -64,10 +64,12 @@ sub Create {
 
     my @rmax = $dbi->GetQuery('array','GetReportMax');
     my $rmax = @rmax ? ($rmax[0]->[0] || 0) : 0;
+    my @dmax = $dbi->GetQuery('array','GetReleaseDataMax');
+    my $dmax = @dmax ? ($dmax[0]->[0] || 0) : 0;
 
     my $id = 0;
     my $step = 1000000;
-    my ($from,$to) = (0,$step);
+    my ($from,$to) = ($dmax,$step + $dmax);
     while(1) {
         my $changes = 0;
         my @summ = $dbi->GetQuery('hash','GetSummaryBlock',$from,$to);
@@ -80,7 +82,8 @@ sub Create {
                 next;
             }
 
-            $progress->( ".. inserting $row->{id}" )     if(defined $progress);
+            $progress->( ".. inserting $row->{id} for $row->{dist} - $row->{version} = " . $cpan->DistIndex($row->{dist},$row->{version}) )
+                if(defined $progress);
 
             $dbi->DoQuery('InsertReleaseData',
                 $row->{dist},$row->{version},$row->{id},$row->{guid},
@@ -141,7 +144,7 @@ sub Update {
                 $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{fail}     += $row->[9];
                 $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{na}       += $row->[10];
                 $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{unknown}  += $row->[11];
-                $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{uploadid} += $row->[12];
+                $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{uploadid}  = $row->[12];
             }
 
             for my $dist (keys %summ) {
@@ -233,7 +236,7 @@ sub Rebuild {
         $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{fail}     += $row->[9];
         $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{na}       += $row->[10];
         $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{unknown}  += $row->[11];
-        $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{uploadid} += $row->[12];
+        $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{uploadid}  = $row->[12];
     }
     $dbi->DoQuery('DeleteReleaseSummaryByDistVers',$dist,$vers);
     for my $key1 (keys %{ $summ{$dist}{$vers} }) {
@@ -269,13 +272,13 @@ sub Fix {
         my $next = $dbi->Iterator('array','GetReleaseDataByDist',$rs->{dist});
         while( my $row = $next->() ) {
             $progress->( ".. .. processing $row->[2]" )     if(defined $progress);
-            $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{id}       = $row->[2];
-            $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{guid}     = $row->[3];
-            $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{pass}     = $row->[8];
-            $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{fail}     = $row->[9];
-            $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{na}       = $row->[10];
-            $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{unknown}  = $row->[11];
-            $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{uploadid} = $row->[12];
+            $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{id}        = $row->[2];
+            $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{guid}      = $row->[3];
+            $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{pass}     += $row->[8];
+            $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{fail}     += $row->[9];
+            $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{na}       += $row->[10];
+            $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{unknown}  += $row->[11];
+            $summ{$row->[0]}{$row->[1]}{$row->[4]}{$row->[5]}{$row->[6]}{$row->[7]}{uploadid}  = $row->[12];
         }
 
         $dbi->DoQuery('DeleteReleaseSummaryByDist',$rs->{dist});
