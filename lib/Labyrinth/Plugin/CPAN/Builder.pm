@@ -784,10 +784,13 @@ sub DistroPages {
             my @stats = $dbi->GetQuery('hash','GetStatsPass2',{dist=>$dist},$lastref);
             for(@stats) {
                 my ($osname,$code) = $cpan->OSName($_->{osname});
-                $stats->{$_->{perl}}{$code}{version} = $_->{version}
-                    if(!$stats->{$_->{perl}}->{$code} || _versioncmp($_->{version},$stats->{$_->{perl}}->{$code}{version}));
+                my $perl = $_->{perl};
+                $perl =~ s/ .*$//; # don't care about the patch/RC number
 
-                $stats->{$_->{perl}}{$code}{count}++;
+                $stats->{$perl}{$code}{version} = $_->{version}
+                    if(!$stats->{$perl}->{$code} || _versioncmp($_->{version},$stats->{$perl}->{$code}{version}));
+
+                $stats->{$perl}{$code}{count}++;
                 $oses->{$code} = $osname;
                 $lastref = $_->{id} if($lastref < $_->{id});
             }
