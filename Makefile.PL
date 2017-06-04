@@ -47,6 +47,7 @@ WriteMakefile(
         'Metabase::Resource'                => '0',
         'Sort::Versions'                    => '0',
         'Time::Local'                       => '0',
+        'Try::Tiny'                         => '0',
         'version'                           => '0',
         'WWW::Mechanize'                    => '0',
         'XML::RSS'                          => '0',

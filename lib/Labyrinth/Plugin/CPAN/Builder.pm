@@ -36,6 +36,7 @@ use File::Slurp;
 use JSON::XS;
 #use Sort::Versions;
 use Time::Local;
+use Try::Tiny;
 use XML::RSS;
 #use YAML::XS;
 use version;
@@ -272,6 +273,7 @@ sub RemovePages {
 sub RemoveAuthorPages {
     my ($cpan,$dbi,$progress,$name) = @_;
     my (%remove,%author,@reports);
+    my $fail = 0;
 
     # get ids from the page requests
     my @requests = $dbi->GetQuery('hash','GetRequestIDs',{names => $name},'rmauth');
@@ -292,45 +294,52 @@ sub RemoveAuthorPages {
         my $cache = sprintf "%s/static/author/%s", $settings{webdir}, substr($author,0,1);
         my $destfile = "$cache/$author.json";
 
-        # load JSON, if we have one
-        if(-f $destfile) {
-            my $data  = read_file($destfile);
-            my $store;
-            eval { $store = decode_json($data) };
-            if(!$@ && $store) {
-                for my $row (@$store) {
-                    next    if($requests{$row->{id}});                      # filter out requests
+        try {
+            # load JSON, if we have one
+            if(-f $destfile) {
+                my $data  = read_file($destfile);
+                my $store;
+                eval { $store = decode_json($data) };
+                if(!$@ && $store) {
+                    for my $row (@$store) {
+                        next    if($requests{$row->{id}});                      # filter out requests
 
-                    push @reports, $row;
+                        push @reports, $row;
+                    }
                 }
-            }
-            overwrite_file( $destfile, _make_json( \@reports ) );
-        }
-
-        # clean the summary, if we have one
-        my @summary = $dbi->GetQuery('hash','GetAuthorSummary',$author);
-        if(@summary) {
-            $progress->( ".. processing rmauth $author $name" )     if(defined $progress);
-            my $dataset = decode_json($summary[0]->{dataset});
-
-            for my $data ( @{ $dataset->{distributions} } ) {
-                my $dist = $data->{dist};
-                my $summ = $data->{summary};
-
-                next    unless($remove{$dist});
-
-                for my $state (keys %{ $remove{$dist} }) {
-                    $summ->{ $state } -= $remove{$dist}{$state};
-                    $summ->{ 'ALL'  } -= $remove{$dist}{$state};
-                }
+                overwrite_file( $destfile, _make_json( \@reports ) );
             }
 
-            $dbi->DoQuery('UpdateAuthorSummary',$summary[0]->{lastid},encode_json($dataset),$author);
-        }
+            # clean the summary, if we have one
+            my @summary = $dbi->GetQuery('hash','GetAuthorSummary',$author);
+            if(@summary) {
+                $progress->( ".. processing rmauth $author $name" )     if(defined $progress);
+                my $dataset = decode_json($summary[0]->{dataset});
 
-        # push in author queue to rebuild pages
-        $dbi->DoQuery('PushAuthor',$author);
+                for my $data ( @{ $dataset->{distributions} } ) {
+                    my $dist = $data->{dist};
+                    my $summ = $data->{summary};
+
+                    next    unless($remove{$dist});
+
+                    for my $state (keys %{ $remove{$dist} }) {
+                        $summ->{ $state } -= $remove{$dist}{$state};
+                        $summ->{ 'ALL'  } -= $remove{$dist}{$state};
+                    }
+                }
+
+                $dbi->DoQuery('UpdateAuthorSummary',$summary[0]->{lastid},encode_json($dataset),$author);
+            }
+
+            # push in author queue to rebuild pages
+            $dbi->DoQuery('PushAuthor',$author);
+        } catch {
+            $progress->( ".. failed rmauth $author $name (catch block)" )     if(defined $progress);
+            $fail = 1;
+        };
     }
+
+    return 0 if($fail);
 
     # remove requests
     $dbi->DoQuery('DeletePageRequests',{ids => join(',',@ids)},'rmauth',$name);

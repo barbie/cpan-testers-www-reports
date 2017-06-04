@@ -9,6 +9,8 @@ Changes for the CPAN Testers Reports website
         - updated view-report.cgi to latest live version
           (thanks to Alceu Rodrigues de Freitas Junior for the patch)
         - updated changes from live production.
+        - added Try::Tiny capture around the RemoveAuthorPages block due to
+          some odd JSON parsing that was causing it to crash.
 
 3.57    2015-08-16
         - fixes from live.
