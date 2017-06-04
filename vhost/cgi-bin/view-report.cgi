@@ -2,7 +2,7 @@
 use strict;
 $|++;
 
-my $VERSION = '3.49';
+my $VERSION = '3.57';
 
 #----------------------------------------------------------------------------
 
@@ -62,7 +62,7 @@ use Metabase::Resource::metabase::user;
 # -------------------------------------
 # Variables
 
-my $DEBUG = 0;
+my $AUDIT = 0;
 my $LONG_ALLOWED = 0;
 
 my $VHOST = '/var/www/reports/';
@@ -82,6 +82,8 @@ process_report();
 # Subroutines
 
 sub init_options {
+    audit("AUDIT[$$]: start init_options");
+
     $options{config} = $VHOST . 'cgi-bin/config/settings.ini';
 
     error("Must specific the configuration file\n")             unless($options{config});
@@ -121,11 +123,16 @@ sub init_options {
 #    }
 
     LogDebug('DEBUG: cgiparams=',Dumper(\%cgiparams));
+    audit("AUDIT[$$]: stop init_options");
 }
 
 sub process_report {
+    audit("AUDIT[$$]: start retrieve_report - $cgiparams{id}");
     retrieve_report();
+    audit("AUDIT[$$]: stop retrieve_report");
+    audit("AUDIT[$$]: start print_report");
     print_report();
+    audit("AUDIT[$$]: stop print_report");
 }
 
 sub retrieve_report {
@@ -419,6 +426,17 @@ sub error {
     exit;
 }
 
+sub audit {
+    return  unless($AUDIT);
+
+    my @date = localtime(time);
+    my $date = sprintf "%04d/%02d/%02d %02d:%02d:%02d", $date[5]+1900, $date[4]+1, $date[3], $date[2], $date[1], $date[0];
+
+    my $fh = IO::File->new($VHOST . 'cgi-bin/cache/view-report-audit.log','a+') or return;
+    print $fh "$date " . join(' ',@_ ). "\n";
+    $fh->close;
+}
+
 1;
 
 __END__
@@ -451,7 +469,7 @@ F<http://blog.cpantesters.org/>
 
 =head1 COPYRIGHT AND LICENSE
 
-  Copyright (C) 2008-2014 Barbie <barbie@cpan.org>
+  Copyright (C) 2008-2015 Barbie <barbie@cpan.org>
 
   This module is free software; you can redistribute it and/or
   modify it under the Artistic License 2.0.
