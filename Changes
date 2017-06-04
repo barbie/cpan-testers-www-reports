@@ -6,6 +6,9 @@ Changes for the CPAN Testers Reports website
         - upgrade to Labyrinth-Plugin-Core-5.19.
         - upgrade to Labyrinth-Plugin-CPAN-3.54.
         - upgrade to Labyrinth-Plugin-Requests-1.08.
+        - updated view-report.cgi to latest live version
+          (thanks to Alceu Rodrigues de Freitas Junior for the patch)
+        - updated changes from live production.
 
 3.57    2015-08-16
         - fixes from live.
