@@ -261,6 +261,8 @@ sub RemovePages {
         $progress->( ".. processing $index->{type} $index->{name}" )     if(defined $progress);
 
         if($index->{type} eq 'rmauth') {
+            # 2016-04-21 = Barbie - temporarily suspended line below to allow author pages to generate
+            # seems to be a bug picking up UUID for PSIXDISTS :(
             RemoveAuthorPages($cpan,$dbi,$progress,$index->{name});
         } else {
             RemoveDistroPages($cpan,$dbi,$progress,$index->{name});
@@ -297,9 +299,12 @@ sub RemoveAuthorPages {
         try {
             # load JSON, if we have one
             if(-f $destfile) {
+                $progress->( ".. processing rmauth $author $name (cleaning JSON file)" )     if(defined $progress);
                 my $data  = read_file($destfile);
+                $progress->( ".. processing rmauth $author $name (read JSON file)" )     if(defined $progress);
                 my $store;
                 eval { $store = decode_json($data) };
+                $progress->( ".. processing rmauth $author $name (decoded JSON data)" )     if(defined $progress);
                 if(!$@ && $store) {
                     for my $row (@$store) {
                         next    if($requests{$row->{id}});                      # filter out requests
@@ -313,8 +318,9 @@ sub RemoveAuthorPages {
             # clean the summary, if we have one
             my @summary = $dbi->GetQuery('hash','GetAuthorSummary',$author);
             if(@summary) {
-                $progress->( ".. processing rmauth $author $name" )     if(defined $progress);
+                $progress->( ".. processing rmauth $author $name (cleaning summary) " . scalar(@summary) . ' ' . ($summary[0] && $summary[0]->{dataset} ? 'true' : 'false') )     if(defined $progress);
                 my $dataset = decode_json($summary[0]->{dataset});
+                $progress->( ".. processing rmauth $author $name (decoded JSON summary)" )     if(defined $progress);
 
                 for my $data ( @{ $dataset->{distributions} } ) {
                     my $dist = $data->{dist};
@@ -580,6 +586,7 @@ sub DistroPages {
     my %vars = %{ clone (\%tvars) };
 
 #LogDebug("DistroPages: before tvars=".total_size(\%tvars)." bytes");
+#$progress->( ".. .. starting $name" ) if(defined $progress);
 
     my $exceptions = $cpan->exceptions;
     my $symlinks   = $cpan->symlinks;
@@ -606,7 +613,9 @@ sub DistroPages {
             @delete = ($name);
         }
 
+#$progress->( ".. .. getting records for $name" ) if(defined $progress);
         my @valid = $dbi->GetQuery('hash','FindDistro',{dist=>$dist});
+#$progress->( ".. .. retrieved records for $name" ) if(defined $progress);
         if(@valid) {
             my (@reports,%authors,%version,$summary,$byversion,$next);
             my $fromid = '';
@@ -628,6 +637,7 @@ sub DistroPages {
             my $destfile = "$cache/$name.json";
             mkpath($cache);
 
+#$progress->( ".. .. loading JSON data for $name" ) if(defined $progress);
             # load JSON data if available
             if(-f $destfile && $lastid) {
                 my $json = read_file($destfile);
@@ -653,6 +663,7 @@ sub DistroPages {
                     $fromid = " AND id > $lastid ";
                 }
             }
+#$progress->( ".. .. loaded JSON data for $name" ) if(defined $progress);
 
             # if we have ids in the page requests, just update these
             my @requests = $dbi->GetQuery('hash','GetRequestIDs',{names => $dist},'distro');
@@ -664,6 +675,7 @@ sub DistroPages {
                 $next = $dbi->Iterator('hash','GetDistroReports',{fromid => $fromid, dist => $dist});
             }
 
+#$progress->( ".. .. starting data update for $name" ) if(defined $progress);
             while(my $row = $next->()) {
                 $row->{perl} = "5.004_05"               if $row->{perl} eq "5.4.4"; # RT 15162
                 $row->{perl} =~ s/patch.*/patch blead/  if $row->{perl} =~ /patch.*blead/;
@@ -687,6 +699,7 @@ sub DistroPages {
                 unshift @{ $reports{$row->{version}} }, $row    if($reports{$row->{version}});
                 $version{$row->{version}}->{new} = 1;
             }
+#$progress->( ".. .. summary data update complete for $name" ) if(defined $progress);
 
             for my $version ( keys %$byversion ) {
                 my @list = @{ $byversion->{$version} };
@@ -718,6 +731,7 @@ sub DistroPages {
                 }
                 $release{$version}->{header} .= "</h2>";
             }
+#$progress->( ".. .. version data update complete for $name" ) if(defined $progress);
 
             my ($stats,$oses);
             @rows = $dbi->GetQuery('hash','GetDistrosPass',{dist=>$dist});
@@ -726,6 +740,7 @@ sub DistroPages {
                 $stats->{$_->{perl}}{$code}{count} = $_->{count};
                 $oses->{$code} = $osname;
             }
+#$progress->( ".. .. OS data update complete for $name" ) if(defined $progress);
 
             # distribution PASS stats
             my @stats = $dbi->GetQuery('hash','GetStatsPass',{dist=>$dist});
@@ -734,6 +749,7 @@ sub DistroPages {
                 $stats->{$_->{perl}}{$code}{version} = $_->{version}
                     if(!$stats->{$_->{perl}}->{$code} || _versioncmp($_->{version},$stats->{$_->{perl}}->{$code}{version}));
             }
+#$progress->( ".. .. Pass Stats data update complete for $name" ) if(defined $progress);
 
             my @stats_oses = sort keys %$oses;
             my @stats_perl = sort {_versioncmp($b,$a)} keys %$stats;
@@ -752,6 +768,7 @@ sub DistroPages {
             $vars{builder}{perlvers}        = $cpan->mklist_perls;
             $vars{builder}{osnames}         = $cpan->osnames;
             $vars{builder}{processed}       = time;
+#$progress->( ".. .. memory data update complete for $name" ) if(defined $progress);
 
             # insert summary details
             {
@@ -759,6 +776,7 @@ sub DistroPages {
                 if(@summary)    { $dbi->DoQuery('UpdateDistroSummary',$lastid,$dataset,$name); }
                 else            { $dbi->DoQuery('InsertDistroSummary',$lastid,$dataset,$name); }
             }
+#$progress->( ".. .. summary data stored for $name" ) if(defined $progress);
 
             $vars{versions}        = \@versions;
             $vars{versions_tag}    = \%versions;
@@ -768,15 +786,19 @@ sub DistroPages {
             $vars{cache}           = $cache;
             $vars{processed}       = formatDate(8);
 
+#$progress->( ".. .. building static pages for $name" ) if(defined $progress);
             # build other static pages
             $vars{content} = 'cpan/distro-reports-static.html';
             my $text = Transform( 'cpan/layout-static.html', \%vars );
             overwrite_file( "$cache/$name.html", $text );
+#$progress->( ".. .. Dynamic HTML page written for $name" ) if(defined $progress);
 
             $text = Transform( 'cpan/distro.js', \%vars );
             overwrite_file( "$cache/$name.js", $text );
+#$progress->( ".. .. JS page written for $name" ) if(defined $progress);
 
             overwrite_file( "$cache/$name.json", _make_json( \@reports ) );
+#$progress->( ".. .. JSON page written for $name" ) if(defined $progress);
 
             $cache = sprintf "%s/stats/distro/%s", $settings{webdir}, substr($name,0,1);
             mkpath($cache);
@@ -785,6 +807,7 @@ sub DistroPages {
             $vars{content} = 'cpan/stats-distro-static.html';
             $text = Transform( 'cpan/layout-stats-static.html', \%vars );
             overwrite_file( "$cache/$name.html", $text );
+#$progress->( ".. .. Static HTML page written for $name" ) if(defined $progress);
 
             # generate symbolic links where necessary
             if($merged->{$name}) {
@@ -801,6 +824,7 @@ sub DistroPages {
                     }
                 }
                 chdir($cwd);
+#$progress->( ".. .. symbolic links created for $name" ) if(defined $progress);
             }
         }
     }
@@ -809,7 +833,9 @@ sub DistroPages {
 #LogDebug("DistroPages: ids=@ids, distros=@delete");
 
     # remove requests
+#$progress->( ".. .. removing page_request entries for $name. ids=".scalar(@ids) ) if(defined $progress);
     $dbi->DoQuery('DeletePageRequests',{ids => join(',',@ids)},'distro',$_) for(@delete);
+#$progress->( ".. .. removed page_request entries for $name" ) if(defined $progress);
 }
 
 sub StatsPages {
