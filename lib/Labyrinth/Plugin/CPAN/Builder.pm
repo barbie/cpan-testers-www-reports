@@ -733,23 +733,76 @@ sub DistroPages {
             }
 #$progress->( ".. .. version data update complete for $name" ) if(defined $progress);
 
-            my ($stats,$oses);
-            @rows = $dbi->GetQuery('hash','GetDistrosPass',{dist=>$dist});
-            for(@rows) {
-                my ($osname,$code) = $cpan->OSName($_->{osname});
-                $stats->{$_->{perl}}{$code}{count} = $_->{count};
-                $oses->{$code} = $osname;
-            }
-#$progress->( ".. .. OS data update complete for $name" ) if(defined $progress);
+# V1 code starts
+#            my ($stats,$oses);
+#            @rows = $dbi->GetQuery('hash','GetDistrosPass',{dist=>$dist});
+#            for(@rows) {
+#                my ($osname,$code) = $cpan->OSName($_->{osname});
+#                $stats->{$_->{perl}}{$code}{count} = $_->{count};
+#                $oses->{$code} = $osname;
+#            }
+##$progress->( ".. .. OS data update complete for $name" ) if(defined $progress);
+#
+#            # distribution PASS stats
+#            my @stats = $dbi->GetQuery('hash','GetStatsPass',{dist=>$dist});
+#            for(@stats) {
+#                my ($osname,$code) = $cpan->OSName($_->{osname});
+#                $stats->{$_->{perl}}{$code}{version} = $_->{version}
+#                    if(!$stats->{$_->{perl}}->{$code} || _versioncmp($_->{version},$stats->{$_->{perl}}->{$code}{version}));
+#            }
+##$progress->( ".. .. Pass Stats data update complete for $name" ) if(defined $progress);
+# V1 code end
 
-            # distribution PASS stats
-            my @stats = $dbi->GetQuery('hash','GetStatsPass',{dist=>$dist});
+# V2 code starts
+#            # retrieve perl/os stats
+#            my ($stats,$oses);
+#            my @stats = $dbi->GetQuery('hash','GetStatsPass',{dist=>$dist});
+#            for(@stats) {
+#                my ($osname,$code) = $cpan->OSName($_->{osname});
+#                $stats->{$_->{perl}}{$code}{version} = $_->{version}
+#                    if(!$stats->{$_->{perl}}->{$code} || _versioncmp($_->{version},$stats->{$_->{perl}}->{$code}{version}));
+#
+#                $stats->{$_->{perl}}{$code}{count}++;
+#                $oses->{$code} = $osname;
+#            }
+##$progress->( ".. .. Perl/OS data update complete for $name" ) if(defined $progress);
+# V2 code end
+
+# V3 code starts
+            # retrieve perl/os stats
+            my ($stats,$oses);
+            my $lastid = 0;
+            my @rows = $dbi->GetQuery('hash','GetStatsStore',{dist=>$dist});
+            for(@rows) {
+                $stats->{$_->{perl}}{$_->{osname}}{version} = $_->{version};
+                $stats->{$_->{perl}}{$_->{osname}}{count}   = $_->{counter};
+                $oses->{$_->{osname}} = $osname;
+                $lastid |= $_->{lastid};
+            }
+
+            # update perl/os stats
+            my @stats = $dbi->GetQuery('hash','GetStatsPass2',{dist=>$dist},$lastid);
             for(@stats) {
                 my ($osname,$code) = $cpan->OSName($_->{osname});
                 $stats->{$_->{perl}}{$code}{version} = $_->{version}
                     if(!$stats->{$_->{perl}}->{$code} || _versioncmp($_->{version},$stats->{$_->{perl}}->{$code}{version}));
+
+                $stats->{$_->{perl}}{$code}{count}++;
+                $oses->{$code} = $osname;
+                $lastid = $_->{id} if($lastid < $_->{id};
             }
-#$progress->( ".. .. Pass Stats data update complete for $name" ) if(defined $progress);
+
+            # store perl/os stats
+            $dbi->DoQuery('DelStatsStore',$name);
+            for my $perl (keys %$stats) {
+                for my $code (keys %{$stats->{$perl}}) {
+                    $dbi->DoQuery('SetStatsStore',$name,$perl,$code,$stats->{$perl}{$code}{version},$stats->{$perl}{$code}{count},$lastid);
+                }
+            }
+#$progress->( ".. .. Perl/OS data update complete for $name" ) if(defined $progress);
+# V3 code end
+
+
 
             my @stats_oses = sort keys %$oses;
             my @stats_perl = sort {_versioncmp($b,$a)} keys %$stats;
@@ -833,8 +886,11 @@ sub DistroPages {
 #LogDebug("DistroPages: ids=@ids, distros=@delete");
 
     # remove requests
+    while(@ids) {
 #$progress->( ".. .. removing page_request entries for $name. ids=".scalar(@ids) ) if(defined $progress);
-    $dbi->DoQuery('DeletePageRequests',{ids => join(',',@ids)},'distro',$_) for(@delete);
+        my @remove = splice(@ids,0,100);
+        $dbi->DoQuery('DeletePageRequests',{ids => join(',',@remove)},'distro',$_) for(@delete);
+    };
 #$progress->( ".. .. removed page_request entries for $name" ) if(defined $progress);
 }
 

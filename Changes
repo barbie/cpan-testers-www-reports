@@ -11,6 +11,7 @@ Changes for the CPAN Testers Reports website
         - updated changes from live production.
         - added Try::Tiny capture around the RemoveAuthorPages block due to
           some odd JSON parsing that was causing it to crash.
+        - new code to load Perl/OS stats, due to the previous db overload.
 
 3.57    2015-08-16
         - fixes from live.
