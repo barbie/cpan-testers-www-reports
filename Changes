@@ -1,6 +1,7 @@
 Changes for the CPAN Testers Reports website
 ============================================
 
+3.58    2017-06-04
         - updated Release code to use new distribution indices.
         - upgrade to Labyrinth-5.32.
         - upgrade to Labyrinth-Plugin-Core-5.19.
