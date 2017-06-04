@@ -771,17 +771,17 @@ sub DistroPages {
 # V3 code starts
             # retrieve perl/os stats
             my ($stats,$oses);
-            my $lastid = 0;
-            my @rows = $dbi->GetQuery('hash','GetStatsStore',{dist=>$dist});
+            my $lastref = 0;
+            @rows = $dbi->GetQuery('hash','GetStatsStore',{dist=>$dist});
             for(@rows) {
                 $stats->{$_->{perl}}{$_->{osname}}{version} = $_->{version};
                 $stats->{$_->{perl}}{$_->{osname}}{count}   = $_->{counter};
-                $oses->{$_->{osname}} = $osname;
-                $lastid |= $_->{lastid};
+                $oses->{$_->{osname}} = $_->{osname};
+                $lastref |= $_->{lastid};
             }
 
             # update perl/os stats
-            my @stats = $dbi->GetQuery('hash','GetStatsPass2',{dist=>$dist},$lastid);
+            my @stats = $dbi->GetQuery('hash','GetStatsPass2',{dist=>$dist},$lastref);
             for(@stats) {
                 my ($osname,$code) = $cpan->OSName($_->{osname});
                 $stats->{$_->{perl}}{$code}{version} = $_->{version}
@@ -789,20 +789,18 @@ sub DistroPages {
 
                 $stats->{$_->{perl}}{$code}{count}++;
                 $oses->{$code} = $osname;
-                $lastid = $_->{id} if($lastid < $_->{id};
+                $lastref = $_->{id} if($lastref < $_->{id});
             }
 
             # store perl/os stats
             $dbi->DoQuery('DelStatsStore',$name);
             for my $perl (keys %$stats) {
                 for my $code (keys %{$stats->{$perl}}) {
-                    $dbi->DoQuery('SetStatsStore',$name,$perl,$code,$stats->{$perl}{$code}{version},$stats->{$perl}{$code}{count},$lastid);
+                    $dbi->DoQuery('SetStatsStore',$name,$perl,$code,$stats->{$perl}{$code}{version},$stats->{$perl}{$code}{count},$lastref);
                 }
             }
 #$progress->( ".. .. Perl/OS data update complete for $name" ) if(defined $progress);
 # V3 code end
-
-
 
             my @stats_oses = sort keys %$oses;
             my @stats_perl = sort {_versioncmp($b,$a)} keys %$stats;
