@@ -779,7 +779,7 @@ sub DistroPages {
                 $stats->{$_->{perl}}{$_->{osname}}{count}   = $_->{counter};
                 $stats->{$_->{perl}}{$_->{osname}}{updated} = 0;
                 $oses->{$_->{osname}} = $_->{osname};
-                $lastref |= $_->{lastid};
+                $lastref = $_->{lastid};
             }
 
             # update perl/os stats
