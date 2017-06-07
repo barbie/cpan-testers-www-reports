@@ -4,6 +4,7 @@ Changes for the CPAN Testers Reports website
 3.59    2017-06-07
         - introduced auto incrementing storeid to stats_store, to make updates
           easier than lots of inserts.
+        - updated scripts & files with changes from production environment.
 
 3.58    2017-06-04
         - updated Release code to use new distribution indices.
