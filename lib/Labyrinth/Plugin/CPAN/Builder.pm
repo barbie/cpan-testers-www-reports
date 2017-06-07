@@ -772,10 +772,12 @@ sub DistroPages {
             # retrieve perl/os stats
             my ($stats,$oses);
             my $lastref = 0;
-            @rows = $dbi->GetQuery('hash','GetStatsStore',$name});
+            @rows = $dbi->GetQuery('hash','GetStatsStore',$name);
             for(@rows) {
+                $stats->{$_->{perl}}{$_->{osname}}{storeid} = $_->{storeid};
                 $stats->{$_->{perl}}{$_->{osname}}{version} = $_->{version};
                 $stats->{$_->{perl}}{$_->{osname}}{count}   = $_->{counter};
+                $stats->{$_->{perl}}{$_->{osname}}{updated} = 0;
                 $oses->{$_->{osname}} = $_->{osname};
                 $lastref |= $_->{lastid};
             }
@@ -787,6 +789,8 @@ sub DistroPages {
                 my $perl = $_->{perl};
                 $perl =~ s/ .*$//; # don't care about the patch/RC number
 
+                $stats->{$perl}{$code}{updated} = 1;
+
                 $stats->{$perl}{$code}{version} = $_->{version}
                     if(!$stats->{$perl}->{$code} || _versioncmp($_->{version},$stats->{$perl}->{$code}{version}));
 
@@ -796,12 +800,22 @@ sub DistroPages {
             }
 
             # store perl/os stats
-            $dbi->DoQuery('DelStatsStore',$name);
             for my $perl (keys %$stats) {
                 for my $code (keys %{$stats->{$perl}}) {
-                    $dbi->DoQuery('SetStatsStore',$name,$perl,$code,$stats->{$perl}{$code}{version},$stats->{$perl}{$code}{count},$lastref);
+                    next unless($stats->{$perl}{$code}{updated});
+                    if($stats->{$perl}{$code}{storeid}) {
+                        $dbi->DoQuery('UpdStatsStore',$name,$perl,$code,$stats->{$perl}{$code}{version},$stats->{$perl}{$code}{count},$lastref, $stats->{$perl}{$code}{storeid});
+                    } else {
+                        $dbi->DoQuery('SetStatsStore',$name,$perl,$code,$stats->{$perl}{$code}{version},$stats->{$perl}{$code}{count},$lastref);
+                    }
                 }
             }
+#            $dbi->DoQuery('DelStatsStore',$name);
+#            for my $perl (keys %$stats) {
+#                for my $code (keys %{$stats->{$perl}}) {
+#                    $dbi->DoQuery('SetStatsStore',$name,$perl,$code,$stats->{$perl}{$code}{version},$stats->{$perl}{$code}{count},$lastref);
+#                }
+#            }
 #$progress->( ".. .. Perl/OS data update complete for $name" ) if(defined $progress);
 # V3 code end
 

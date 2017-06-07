@@ -1,6 +1,9 @@
 Changes for the CPAN Testers Reports website
 ============================================
 
+        - introduced auto incrementing storeid to stats_store, to make updates
+          easier than lots of inserts.
+
 3.58    2017-06-04
         - updated Release code to use new distribution indices.
         - upgrade to Labyrinth-5.32.
