@@ -772,7 +772,7 @@ sub DistroPages {
             # retrieve perl/os stats
             my ($stats,$oses);
             my $lastref = 0;
-            @rows = $dbi->GetQuery('hash','GetStatsStore',{dist=>$dist});
+            @rows = $dbi->GetQuery('hash','GetStatsStore',$name});
             for(@rows) {
                 $stats->{$_->{perl}}{$_->{osname}}{version} = $_->{version};
                 $stats->{$_->{perl}}{$_->{osname}}{count}   = $_->{counter};
