@@ -7,6 +7,7 @@ Changes for the CPAN Testers Reports website
           updated Javascript files.
         - perls & OSes no longer stored as JSON, retrieved dynamically on page
           request.
+        - DB server now in US, so oldest request time are recorded at EDT.
 
 3.59    2017-06-07
         - introduced auto incrementing storeid to stats_store, to make updates
