@@ -8,6 +8,8 @@ Changes for the CPAN Testers Reports website
         - perls & OSes no longer stored as JSON, retrieved dynamically on page
           request.
         - DB server now in US, so oldest request time are recorded at EDT.
+        - Static site has now been deprecated. See GH#6 for more details:
+          https://github.com/barbie/cpan-testers-www-reports/issues/6
 
 3.59    2017-06-07
         - introduced auto incrementing storeid to stats_store, to make updates

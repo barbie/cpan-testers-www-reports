@@ -555,11 +555,12 @@ sub AuthorPages {
             $vars{content}         = 'cpan/author-reports-static.html';
             $vars{processed}       = formatDate(8);
 
-            # build other static pages
-            my $text = Transform( 'cpan/layout-static.html', \%vars );
-            overwrite_file( "$cache/$name.html", $text );
+# 2017-06-27 - Static page creation disabled, see GH#6 for more details: https://github.com/barbie/cpan-testers-www-reports/issues/6
+#            # build other static pages
+#            my $text = Transform( 'cpan/layout-static.html', \%vars );
+#            overwrite_file( "$cache/$name.html", $text );
 
-            $text = Transform( 'cpan/author.js', \%vars );
+            my $text = Transform( 'cpan/author.js', \%vars );
             overwrite_file( "$cache/$name.js", $text );
 
             overwrite_file( "$cache/$name.json", _make_json( \@reports ) );
@@ -847,13 +848,15 @@ sub DistroPages {
             $vars{processed}       = formatDate(8);
 
 #$progress->( ".. .. building static pages for $name" ) if(defined $progress);
-            # build other static pages
-            $vars{content} = 'cpan/distro-reports-static.html';
-            my $text = Transform( 'cpan/layout-static.html', \%vars );
-            overwrite_file( "$cache/$name.html", $text );
-#$progress->( ".. .. Static HTML page written for $name" ) if(defined $progress);
 
-            $text = Transform( 'cpan/distro.js', \%vars );
+# 2017-06-27 - Static page creation disabled, see GH#6 for more details: https://github.com/barbie/cpan-testers-www-reports/issues/6
+#            # build other static pages
+#            $vars{content} = 'cpan/distro-reports-static.html';
+#            my $text = Transform( 'cpan/layout-static.html', \%vars );
+#            overwrite_file( "$cache/$name.html", $text );
+##$progress->( ".. .. Static HTML page written for $name" ) if(defined $progress);
+
+            my $text = Transform( 'cpan/distro.js', \%vars );
             overwrite_file( "$cache/$name.js", $text );
 #$progress->( ".. .. JS page written for $name" ) if(defined $progress);
 
