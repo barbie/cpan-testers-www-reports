@@ -851,7 +851,7 @@ sub DistroPages {
             $vars{content} = 'cpan/distro-reports-static.html';
             my $text = Transform( 'cpan/layout-static.html', \%vars );
             overwrite_file( "$cache/$name.html", $text );
-#$progress->( ".. .. Dynamic HTML page written for $name" ) if(defined $progress);
+#$progress->( ".. .. Static HTML page written for $name" ) if(defined $progress);
 
             $text = Transform( 'cpan/distro.js', \%vars );
             overwrite_file( "$cache/$name.js", $text );
@@ -867,7 +867,7 @@ sub DistroPages {
             $vars{content} = 'cpan/stats-distro-static.html';
             $text = Transform( 'cpan/layout-stats-static.html', \%vars );
             overwrite_file( "$cache/$name.html", $text );
-#$progress->( ".. .. Static HTML page written for $name" ) if(defined $progress);
+#$progress->( ".. .. Statistics HTML page written for $name" ) if(defined $progress);
 
             # generate symbolic links where necessary
             if($merged->{$name}) {

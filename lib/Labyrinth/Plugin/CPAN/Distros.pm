@@ -78,10 +78,12 @@ sub Reports {
     # get author summary
     my @summary = $dbi->GetQuery('hash','GetDistroSummary',$cgiparams{name});
     unless(@summary) {
+        # summary doesn't exist, request a build
         unless($settings{crawler}) {
             $dbi->DoQuery('PushDistro',$cgiparams{name});
             $tvars{update} = 1;
         }
+
         $tvars{perlvers}    = $cpan->mklist_perls;
         $tvars{osnames}     = $cpan->osnames;
         return;
