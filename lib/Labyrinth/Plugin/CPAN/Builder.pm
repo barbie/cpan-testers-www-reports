@@ -827,15 +827,11 @@ sub DistroPages {
 
             $vars{builder}{distribution}    = $name;
             $vars{builder}{letter}          = substr($name,0,1);
-            $vars{builder}{stats_code}      = $oses;
-            $vars{builder}{stats_oses}      = \@stats_oses;
-            $vars{builder}{stats_perl}      = \@stats_perl;
-            $vars{builder}{stats_poff}      = \@stats_poff;
-            $vars{builder}{stats}           = $stats;
             $vars{builder}{title}           = $vars{title};
             $vars{builder}{perlvers}        = $cpan->mklist_perls;
             $vars{builder}{osnames}         = $cpan->osnames;
             $vars{builder}{processed}       = time;
+
 #$progress->( ".. .. memory data update complete for $name" ) if(defined $progress);
 
             # insert summary details
