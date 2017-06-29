@@ -1,9 +1,12 @@
 Changes for the CPAN Testers Reports website
 ============================================
 
-        - stats code no longer to be stored as JSON, retrieved dynamically on request
-        - new CGI script; reports-statistics.cgi, new & updated templates, and updated 
-          Javascript files.
+        - stats code no longer to be stored as JSON, retrieved dynamically on
+          request
+        - new CGI script; reports-statistics.cgi, new & updated templates, and
+          updated Javascript files.
+        - perls & OSes no longer stored as JSON, retrieved dynamically on page
+          request.
 
 3.59    2017-06-07
         - introduced auto incrementing storeid to stats_store, to make updates

@@ -536,8 +536,6 @@ sub AuthorPages {
             $vars{builder}{letter}          = substr($name,0,1);
             $vars{builder}{title}           = 'Reports for distributions by ' . $name;
             $vars{builder}{distributions}   = \@dists   if(@dists);
-            $vars{builder}{perlvers}        = $cpan->mklist_perls;
-            $vars{builder}{osnames}         = $cpan->osnames;
             $vars{builder}{processed}       = time;
 
             # insert summary details
@@ -828,8 +826,6 @@ sub DistroPages {
             $vars{builder}{distribution}    = $name;
             $vars{builder}{letter}          = substr($name,0,1);
             $vars{builder}{title}           = $vars{title};
-            $vars{builder}{perlvers}        = $cpan->mklist_perls;
-            $vars{builder}{osnames}         = $cpan->osnames;
             $vars{builder}{processed}       = time;
 
 #$progress->( ".. .. memory data update complete for $name" ) if(defined $progress);

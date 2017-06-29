@@ -130,6 +130,8 @@ sub Reports {
     my $parms = decode_json($summary[0]->{dataset});
     for my $key (keys %$parms) { $tvars{$key} = $parms->{$key}; }
     $tvars{processed} = formatDate(8,$parms->{processed}) if($parms->{processed});
+    $tvars{perlvers}  = $cpan->mklist_perls;
+    $tvars{osnames}   = $cpan->osnames;
 }
 
 1;
